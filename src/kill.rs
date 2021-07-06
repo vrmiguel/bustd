@@ -29,7 +29,6 @@ pub fn choose_victim() -> Result<Process> {
         })
         .filter(|pid| *pid > 1)
         .filter_map(|pid| Process::from_pid(pid).ok());
-    
 
     let first_pid = processes.next();
     if first_pid.is_none() {

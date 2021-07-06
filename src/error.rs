@@ -13,9 +13,8 @@ pub enum Error {
     MalformedStatmError,
     ParseIntError,
     NoProcessToKillError,
-    // One of the folders in /proc/ has invalid Unicode
-    InvalidUnicodeInProcFolderError,
     PageSizeFailedError,
+    SysInfoFailedError,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -1,4 +1,5 @@
 use libc::{uname, utsname};
+use std::fmt::Display;
 use std::{ffi::CStr, mem};
 
 use crate::error::{Error, Result};
@@ -68,5 +69,14 @@ impl UnameData {
         };
 
         Ok(LinuxVersion { major, minor })
+    }
+}
+
+impl Display for UnameData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "OS: {}", self.system_name)?;
+        writeln!(f, "Hostname: {}", self.node_name)?;
+        writeln!(f, "Version: {}", self.version)?;
+        writeln!(f, "Architecture: {}", self.machine)
     }
 }

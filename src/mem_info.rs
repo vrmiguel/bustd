@@ -1,28 +1,63 @@
 use libc::sysinfo;
 
-use std::mem;
+use std::{fmt, mem};
+
+use crate::error::{Error, Result};
 
 #[derive(Debug, Default)]
 pub struct MemoryInfo {
-    pub uptime: usize,
-    pub total_ram: usize,
-    pub free_ram: usize,
-    pub shared_ram: usize,
+    pub total_ram_mb: u64,
+    pub total_swap_mb: u64,
+    pub available_ram_mb: u64,
+    pub available_swap_mb: u64,
+    pub available_ram_percent: u8,
+    pub available_swap_percent: u8,
 }
 
 impl MemoryInfo {
-    pub fn new() -> MemoryInfo {
-        let mut sysinfo_s: sysinfo = unsafe { mem::zeroed() };
+    pub fn new() -> Result<MemoryInfo> {
+        let mut sys_info: sysinfo = unsafe { mem::zeroed() };
 
-        let ret_val = unsafe { libc::sysinfo(&mut sysinfo_s) };
+        let ret_val = unsafe { libc::sysinfo(&mut sys_info) };
 
-        assert_eq!(ret_val, 0, "libc::sysinfo failed.");
-
-        MemoryInfo {
-            uptime: sysinfo_s.uptime as usize,
-            total_ram: sysinfo_s.totalram as usize,
-            free_ram: sysinfo_s.freeram as usize,
-            shared_ram: sysinfo_s.sharedram as usize,
+        if ret_val != 0 {
+            Err(Error::SysInfoFailedError)?;
         }
+
+        let mem_unit = sys_info.mem_unit;
+        // Converts bytes into megabytes
+        const B_TO_MB: u64 = 1000 * 1000;
+        let bytes_to_megabytes = |bytes| (bytes / B_TO_MB) * (mem_unit as u64);
+        let ratio = |x, y| ((x as f32 / y as f32) * 100.0) as u8;
+
+        let available_ram_mb = bytes_to_megabytes(sys_info.freeram);
+        let total_ram_mb = bytes_to_megabytes(sys_info.totalram);
+        let total_swap_mb = bytes_to_megabytes(sys_info.totalswap);
+        let available_swap_mb = bytes_to_megabytes(sys_info.freeswap);
+
+        let available_memory_percent = ratio(available_ram_mb, total_ram_mb);
+        let available_swap_percent = if total_swap_mb != 0 {
+            ratio(available_swap_mb, total_swap_mb)
+        } else {
+            0
+        };
+
+        Ok(MemoryInfo {
+            total_ram_mb,
+            available_ram_mb,
+            total_swap_mb,
+            available_swap_mb,
+            available_ram_percent: available_memory_percent,
+            available_swap_percent,
+        })
+    }
+}
+
+impl fmt::Display for MemoryInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Total RAM: {} MB", self.total_ram_mb)?;
+        writeln!(f, "Available RAM: {} MB ({}%)", self.available_ram_mb, self.available_ram_percent)?;
+        writeln!(f, "Total swap: {} MB", self.total_swap_mb)?;
+        writeln!(f, "Available swap: {} MB ({} %)", self.available_swap_mb, self.available_swap_percent)
     }
 }
