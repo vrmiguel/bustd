@@ -1,9 +1,9 @@
 use std::time::Duration;
 use std::{ffi::OsStr, time::Instant};
 
-use walkdir::WalkDir;
 use libc::kill;
-use libc::{SIGTERM, SIGKILL};
+use libc::{SIGKILL, SIGTERM};
+use walkdir::WalkDir;
 
 use crate::error::{Error, Result};
 use crate::process::Process;
@@ -75,10 +75,7 @@ pub fn choose_victim() -> Result<Process> {
     println!(
         "[LOG] Victim => pid: {}, comm: {}, oom_score: {}",
         victim.pid,
-        victim
-            .comm()
-            .unwrap_or_else(|| "unknown".into())
-            .trim(),
+        victim.comm().unwrap_or_else(|| "unknown".into()).trim(),
         victim.oom_score
     );
 
@@ -111,7 +108,10 @@ pub fn kill_and_wait(process: Process) -> Result<bool> {
         if !sigkill_sent {
             let _ = kill_process(&process, SIGKILL);
             sigkill_sent = true;
-            println!("[LOG] Escalated to SIGKILL after {} nanosecs", now.elapsed().as_nanos());
+            println!(
+                "[LOG] Escalated to SIGKILL after {} nanosecs",
+                now.elapsed().as_nanos()
+            );
         }
     }
 
