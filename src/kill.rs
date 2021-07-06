@@ -9,7 +9,7 @@ use walkdir::WalkDir;
 use crate::error::{Error, Result};
 use crate::process::Process;
 
-pub fn choose_victim() -> Result<Process> {
+pub fn choose_victim(mut buf: &mut[u8]) -> Result<Process> {
     let now = Instant::now();
 
     let mut processes = WalkDir::new("/proc/")
@@ -28,7 +28,7 @@ pub fn choose_victim() -> Result<Process> {
                 .ok()
         })
         .filter(|pid| *pid > 1)
-        .filter_map(|pid| Process::from_pid(pid).ok());
+        .filter_map(|pid| Process::from_pid_buf(pid, &mut buf).ok());
 
     let first_pid = processes.next();
     if first_pid.is_none() {

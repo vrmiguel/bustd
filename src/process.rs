@@ -17,6 +17,11 @@ impl Process {
         Ok(Self { pid, oom_score })
     }
 
+    pub fn from_pid_buf(pid: u32, mut buf: &mut[u8]) -> Result<Self> {
+        let oom_score = Self::oom_score_from_pid_wip(pid, &mut buf).or(Err(Error::ProcessNotFoundError))?;
+        Ok(Self { pid, oom_score })
+    }
+
     pub fn this() -> Self {
         let pid = unsafe { libc::getpid() } as u32;
 
@@ -37,25 +42,25 @@ impl Process {
         Self::is_alive_from_pid(self.pid)
     }
 
-    pub fn cmdline(&self) -> Option<String> {
-        let file = format!("/proc/{}/cmdline", self.pid);
-        read_to_string(file).ok()
-    }
+    // pub fn cmdline(&self) -> Option<String> {
+    //     let file = format!("/proc/{}/cmdline", self.pid);
+    //     read_to_string(file).ok()
+    // }
 
     pub fn comm(&self) -> Result<String> {
         let path = format!("/proc/{}/comm", self.pid);
         Ok(read_to_string(path)?)
     }
 
-    pub fn comm_wip(&self, mut buf: &mut [u8]) -> Result<()> {
-        // buf.fill(0);
+    pub fn comm_wip<'a>(&self, mut buf: &'a mut [u8]) -> Result<&'a str> {
         write!(&mut buf[..], "/proc/{}/comm\0", self.pid)?;
+        {
+            let mut file = utils::file_from_buffer(buf)?;
+            buf.fill(0);
+            file.read(&mut buf)?;
+        }
         
-        let mut file = utils::file_from_buffer(buf)?;
-        buf.fill(0);
-        file.read(&mut buf)?;
-        
-        Ok(())
+        Ok(str_from_u8(buf)?)
     }
 
     pub fn oom_score(&self) -> Option<i16> {
@@ -72,6 +77,19 @@ impl Process {
             Ok(score) => score.trim().parse().ok(),
             Err(_) => None,
         }
+    }
+
+    pub fn oom_score_from_pid_wip(pid: u32, mut buf: &mut [u8]) -> Result<i16> {
+        write!(&mut buf[..], "/proc/{}/oom_score\0", pid)?;
+        let contents = {
+            let mut file = utils::file_from_buffer(buf)?;
+            buf.fill(0);
+            file.read(&mut buf)?;
+
+            str_from_u8(buf)?.trim()
+        };
+
+        Ok(contents.parse::<i16>()?)
     }
 
     // TODO: switch to Result
