@@ -1,18 +1,21 @@
+use daemonize::DaemonizeError;
+
 #[derive(Debug)]
 pub enum Error {
     // Only possible uname error: "buf is invalid"
     UnameError,
-    ProcessNotFound,
+    ProcessNotFoundError,
     IoError { reason: String },
+    DaemonizeError { error: DaemonizeError },
 
     // Errors that are likely impossible to happen
-    InvalidLinuxVersion,
-    MalformedStatm,
+    InvalidLinuxVersionError,
+    MalformedStatmError,
     ParseIntError,
-    NoProcessToKill,
+    NoProcessToKillError,
     // One of the folders in /proc/ has invalid Unicode
-    InvalidUnicodeInProcFolder,
-    PageSizeFailed,
+    InvalidUnicodeInProcFolderError,
+    PageSizeFailedError,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -28,5 +31,11 @@ impl From<std::io::Error> for Error {
 impl From<std::num::ParseIntError> for Error {
     fn from(_: std::num::ParseIntError) -> Self {
         Self::ParseIntError
+    }
+}
+
+impl From<DaemonizeError> for Error {
+    fn from(error: DaemonizeError) -> Self {
+        Self::DaemonizeError { error }
     }
 }

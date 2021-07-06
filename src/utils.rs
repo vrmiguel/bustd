@@ -9,7 +9,7 @@ use crate::error::{Error, Result};
 pub fn page_size() -> Result<i64> {
     let page_size = unsafe { sysconf(_SC_PAGESIZE) };
     if page_size == -1 {
-        return Err(Error::PageSizeFailed);
+        return Err(Error::PageSizeFailedError);
     }
 
     Ok(page_size)

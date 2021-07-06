@@ -45,26 +45,26 @@ impl UnameData {
         // The position of the first dot in the 'release' string
         let dot_idx = match self.release.find('.') {
             Some(idx) => idx,
-            None => return Err(Error::InvalidLinuxVersion),
+            None => return Err(Error::InvalidLinuxVersionError),
         };
 
         let (major, minor) = self.release.split_at(dot_idx);
 
         let major = match major.parse::<u8>() {
             Ok(major) => major,
-            Err(_) => return Err(Error::InvalidLinuxVersion),
+            Err(_) => return Err(Error::InvalidLinuxVersionError),
         };
 
         // Eat the leading dot in front of minor
         let minor = &minor[1..];
         let dot_idx = match minor.find('.') {
             Some(idx) => idx,
-            None => return Err(Error::InvalidLinuxVersion),
+            None => return Err(Error::InvalidLinuxVersionError),
         };
 
         let minor = match (&minor[0..dot_idx]).parse::<u8>() {
             Ok(minor) => minor,
-            Err(_) => return Err(Error::InvalidLinuxVersion),
+            Err(_) => return Err(Error::InvalidLinuxVersionError),
         };
 
         Ok(LinuxVersion { major, minor })

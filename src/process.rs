@@ -15,7 +15,7 @@ pub struct Process {
 
 impl Process {
     pub fn from_pid(pid: u32) -> Result<Self> {
-        let oom_score = Self::oom_score_from_pid(pid).ok_or(Error::ProcessNotFound)?;
+        let oom_score = Self::oom_score_from_pid(pid).ok_or(Error::ProcessNotFoundError)?;
         Ok(Self { pid, oom_score })
     }
 
@@ -71,7 +71,7 @@ impl Process {
         let mut columns = contents.split_ascii_whitespace();
         let vm_rss = columns
             .nth(1)
-            .ok_or(Error::MalformedStatm)?
+            .ok_or(Error::MalformedStatmError)?
             .parse::<i64>()?;
 
         let page_size = utils::page_size()?;

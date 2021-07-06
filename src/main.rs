@@ -1,5 +1,6 @@
-use crate::{kill::kill_and_wait, process::Process};
+use crate::process::Process;
 
+mod daemon;
 mod error;
 mod kill;
 mod linux_version;
@@ -9,12 +10,15 @@ mod uname;
 mod utils;
 
 fn main() -> error::Result<()> {
+
     let sysinfo = mem_info::MemoryInfo::new();
     dbg!(sysinfo);
     let uname_data = uname::UnameData::gather()?;
     dbg!(&uname_data);
     let version = uname_data.version();
     dbg!(&version);
+
+    daemon::daemonize()?;
 
     let proc = Process::this();
     dbg!(proc.is_alive());
@@ -25,6 +29,6 @@ fn main() -> error::Result<()> {
     dbg!(proc.vm_rss_kib());
 
     let victim = kill::choose_victim().unwrap();
-    dbg!(kill_and_wait(victim));
+    dbg!(kill::kill_and_wait(victim));
     Ok(())
 }

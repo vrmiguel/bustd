@@ -31,7 +31,7 @@ pub fn choose_victim() -> Result<Process> {
     let first_pid = processes.next();
     if first_pid.is_none() {
         // Likely an impossible scenario but we found no process to kill!
-        return Err(Error::NoProcessToKill);
+        return Err(Error::NoProcessToKillError);
     }
 
     let mut victim = first_pid.unwrap();
