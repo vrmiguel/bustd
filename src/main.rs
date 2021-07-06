@@ -1,4 +1,4 @@
-use crate::process::Process;
+use crate::{kill::kill_and_wait, process::Process};
 
 mod error;
 mod kill;
@@ -24,6 +24,7 @@ fn main() -> error::Result<()> {
     dbg!(proc.oom_score_adj());
     dbg!(proc.vm_rss_kib());
 
-    let victim = kill::choose_victim();
+    let victim = kill::choose_victim().unwrap();
+    dbg!(kill_and_wait(victim));
     Ok(())
 }

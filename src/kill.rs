@@ -1,6 +1,9 @@
+use std::time::Duration;
 use std::{ffi::OsStr, time::Instant};
 
 use walkdir::WalkDir;
+use libc::kill;
+use libc::{SIGTERM, SIGKILL};
 
 use crate::error::{Error, Result};
 use crate::process::Process;
@@ -49,7 +52,6 @@ pub fn choose_victim() -> Result<Process> {
         }
 
         if process.oom_score == victim.oom_score && cur_vm_rss_kib <= victim_vm_rss_kib {
-            procs_jumped += 1;
             continue;
         }
 
@@ -75,7 +77,7 @@ pub fn choose_victim() -> Result<Process> {
         victim.pid,
         victim
             .comm()
-            .unwrap_or_else(|| "unknown comm".into())
+            .unwrap_or_else(|| "unknown".into())
             .trim(),
         victim.oom_score
     );
@@ -83,4 +85,35 @@ pub fn choose_victim() -> Result<Process> {
     println!("{} processes analyzed", proc_counter);
 
     Ok(victim)
+}
+
+pub fn kill_process(process: &Process, signal: i32) -> Result<()> {
+    let res = unsafe { kill(process.pid as i32, signal) };
+    // TODO: check for res
+    Ok(())
+}
+
+pub fn kill_and_wait(process: Process) -> Result<bool> {
+    let pid = process.pid;
+    let now = Instant::now();
+
+    let _ = kill_process(&process, SIGTERM);
+
+    let half_a_sec = Duration::from_secs_f32(0.5);
+    let mut sigkill_sent = false;
+
+    for _ in 0..20 {
+        std::thread::sleep(half_a_sec);
+        if !process.is_alive() {
+            println!("[LOG] Process with PID {} has exited.\n", pid);
+            return Ok(true);
+        }
+        if !sigkill_sent {
+            let _ = kill_process(&process, SIGKILL);
+            sigkill_sent = true;
+            println!("[LOG] Escalated to SIGKILL after {} nanosecs", now.elapsed().as_nanos());
+        }
+    }
+
+    Ok(false)
 }

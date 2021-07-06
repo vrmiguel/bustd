@@ -28,11 +28,15 @@ impl Process {
 
     /// Return true if the process is alive
     /// Could still return true if the process has exited but hasn't yet been reaped.  
-    pub fn is_alive(&self) -> bool {
+    pub fn is_alive_from_pid(pid: u32) -> bool {
         // Safety: `getpgid` is memory safe
-        let group_id = unsafe { getpgid(self.pid as i32) };
+        let group_id = unsafe { getpgid(pid as i32) };
 
         group_id > 0
+    }
+
+    pub fn is_alive(&self) -> bool {
+        Self::is_alive_from_pid(self.pid)
     }
 
     pub fn cmdline(&self) -> Option<String> {
