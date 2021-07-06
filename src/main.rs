@@ -28,7 +28,7 @@ fn main() -> error::Result<()> {
     dbg!(proc.oom_score_adj());
     dbg!(proc.vm_rss_kib());
 
-    let victim = kill::choose_victim().unwrap();
-    dbg!(kill::kill_and_wait(victim));
+    let victim = kill::choose_victim()?;
+    // kill::kill_and_wait(victim)?;
     Ok(())
 }

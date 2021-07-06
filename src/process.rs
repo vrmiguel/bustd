@@ -67,7 +67,8 @@ impl Process {
 
     // TODO: switch to Result
     pub fn vm_rss_kib(&self) -> Result<i64> {
-        let contents = read_to_string("/proc/3907/statm")?;
+        let path = format!("/proc/{}/statm", self.pid);
+        let contents = read_to_string(path)?;
         let mut columns = contents.split_ascii_whitespace();
         let vm_rss = columns
             .nth(1)

@@ -3,6 +3,7 @@ use std::{ffi::OsStr, time::Instant};
 
 use libc::kill;
 use libc::{SIGKILL, SIGTERM};
+
 use walkdir::WalkDir;
 
 use crate::error::{Error, Result};
@@ -10,6 +11,7 @@ use crate::process::Process;
 
 pub fn choose_victim() -> Result<Process> {
     let now = Instant::now();
+
     let mut processes = WalkDir::new("/proc/")
         .max_depth(1)
         .into_iter()
@@ -27,6 +29,7 @@ pub fn choose_victim() -> Result<Process> {
         })
         .filter(|pid| *pid > 1)
         .filter_map(|pid| Process::from_pid(pid).ok());
+    
 
     let first_pid = processes.next();
     if first_pid.is_none() {
@@ -35,9 +38,8 @@ pub fn choose_victim() -> Result<Process> {
     }
 
     let mut victim = first_pid.unwrap();
+    // TODO: find another victim if victim.vm_rss_kib() fails here
     let mut victim_vm_rss_kib = victim.vm_rss_kib()?;
-
-    let mut proc_counter = 1;
 
     for process in processes {
         if victim.oom_score > process.oom_score {
@@ -67,8 +69,6 @@ pub fn choose_victim() -> Result<Process> {
 
         victim = process;
         victim_vm_rss_kib = cur_vm_rss_kib;
-
-        proc_counter += 1;
     }
 
     println!("[LOG] Found victim in {} secs.", now.elapsed().as_secs());
@@ -78,8 +78,6 @@ pub fn choose_victim() -> Result<Process> {
         victim.comm().unwrap_or_else(|| "unknown".into()).trim(),
         victim.oom_score
     );
-
-    println!("{} processes analyzed", proc_counter);
 
     Ok(victim)
 }
