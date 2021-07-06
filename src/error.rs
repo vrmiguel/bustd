@@ -1,3 +1,5 @@
+use std::str::Utf8Error;
+
 use daemonize::DaemonizeError;
 
 #[derive(Debug)]
@@ -7,6 +9,7 @@ pub enum Error {
     ProcessNotFoundError,
     IoError { reason: String },
     DaemonizeError { error: DaemonizeError },
+    UnicodeError { error: Utf8Error },
 
     // Errors that are likely impossible to happen
     InvalidLinuxVersionError,
@@ -36,5 +39,11 @@ impl From<std::num::ParseIntError> for Error {
 impl From<DaemonizeError> for Error {
     fn from(error: DaemonizeError) -> Self {
         Self::DaemonizeError { error }
+    }
+}
+
+impl From<std::str::Utf8Error> for Error {
+    fn from(error: std::str::Utf8Error) -> Self {
+        Self::UnicodeError { error }
     }
 }

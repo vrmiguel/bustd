@@ -74,7 +74,7 @@ pub fn choose_victim() -> Result<Process> {
     println!(
         "[LOG] Victim => pid: {}, comm: {}, oom_score: {}",
         victim.pid,
-        victim.comm().unwrap_or_else(|| "unknown".into()).trim(),
+        victim.comm().unwrap_or_else(|_| "unknown".into()).trim(),
         victim.oom_score
     );
 

@@ -1,11 +1,9 @@
-use std::fs::read_to_string;
+use std::{fs::{File, read_to_string}, io::{BufRead, BufReader, Cursor, Read}};
+use std::io::Write;
 
 use libc::getpgid;
 
-use crate::{
-    error::{Error, Result},
-    utils,
-};
+use crate::{error::{Error, Result}, utils::{self, str_from_u8}};
 
 #[derive(Debug, Default)]
 pub struct Process {
@@ -44,9 +42,20 @@ impl Process {
         read_to_string(file).ok()
     }
 
-    pub fn comm(&self) -> Option<String> {
+    pub fn comm(&self) -> Result<String> {
         let path = format!("/proc/{}/comm", self.pid);
-        read_to_string(path).ok()
+        Ok(read_to_string(path)?)
+    }
+
+    pub fn comm_wip(&self, mut buf: &mut [u8]) -> Result<()> {
+        // buf.fill(0);
+        write!(&mut buf[..], "/proc/{}/comm\0", self.pid)?;
+        
+        let mut file = utils::file_from_buffer(buf)?;
+        buf.fill(0);
+        file.read(&mut buf)?;
+        
+        Ok(())
     }
 
     pub fn oom_score(&self) -> Option<i16> {

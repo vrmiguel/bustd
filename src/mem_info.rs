@@ -56,8 +56,16 @@ impl MemoryInfo {
 impl fmt::Display for MemoryInfo {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Total RAM: {} MB", self.total_ram_mb)?;
-        writeln!(f, "Available RAM: {} MB ({}%)", self.available_ram_mb, self.available_ram_percent)?;
+        writeln!(
+            f,
+            "Available RAM: {} MB ({}%)",
+            self.available_ram_mb, self.available_ram_percent
+        )?;
         writeln!(f, "Total swap: {} MB", self.total_swap_mb)?;
-        writeln!(f, "Available swap: {} MB ({} %)", self.available_swap_mb, self.available_swap_percent)
+        writeln!(
+            f,
+            "Available swap: {} MB ({} %)",
+            self.available_swap_mb, self.available_swap_percent
+        )
     }
 }
