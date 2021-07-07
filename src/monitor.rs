@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use crate::error::Result;
 use crate::kill;
-use crate::kill::kill_and_wait;
 use crate::memory;
 use crate::memory::MemoryInfo;
 use crate::process::Process;

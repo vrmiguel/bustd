@@ -21,11 +21,11 @@ fn main() -> error::Result<()> {
     // In order to correctly use `mlockall`, we'll try our best to avoid heap allocations and
     // reuse these buffers right here, even though it makes the code less readable.
     // Buffer specific to process creation
-    let mut proc_buf = [0_u8; 50];
+    let proc_buf = [0_u8; 50];
     // Buffer for anything else
-    let mut buf = [0_u8; 100];
+    let buf = [0_u8; 100];
 
-    // daemon::daemonize()?;
+    daemon::daemonize()?;
 
     if let Err(err) = lock_memory_pages() {
         eprintln!("Failed to lock memory pages: {:?}. Continuing anyway.", err);
@@ -35,8 +35,6 @@ fn main() -> error::Result<()> {
 
     println!("Daemon started successfully");
     
-    // kill::choose_victim(&mut proc_buf, &mut buf)?
-    // kill::kill_and_wait(victim)?;
     Monitor::new(proc_buf, buf)?.poll()
     // Ok(())
 }
