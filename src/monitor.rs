@@ -1,10 +1,14 @@
 use std::time::Duration;
 
 use crate::error::Result;
+use crate::kill;
 use crate::memory::MemoryInfo;
+use crate::process::Process;
 
 pub struct Monitor {
     memory_info: MemoryInfo,
+    proc_buf: [u8; 50],
+    buf: [u8; 100],
 }
 
 impl Monitor {
@@ -46,19 +50,25 @@ impl Monitor {
         Duration::from_millis(time_to_sleep as u64)
     }
 
-    pub fn new() -> Result<Self> {
+    pub fn new(proc_buf: [u8; 50], buf: [u8; 100]) -> Result<Self> {
         let memory_info = MemoryInfo::new()?;
 
-        Ok(Self { memory_info })
+        Ok(Self { memory_info, proc_buf, buf })
     }
 
-    pub fn low_memory(&self) {
+    pub fn memory_is_low(&self) {
 
     }
 
-    pub fn poll(&self) -> Result<()> {
+    pub fn get_victim(&mut self) -> Result<Process> {
+        kill::choose_victim(&mut self.proc_buf, &mut self.buf)
+    }
+
+    pub fn poll(&mut self) -> Result<()> {
         loop {
             let sleep_time = self.sleep_time_ms();
+            let victim = self.get_victim()?;
+            dbg!(victim);
             eprintln!("Sleeping {}ms", sleep_time.as_millis());
             
             std::thread::sleep(sleep_time);

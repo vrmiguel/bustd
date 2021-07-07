@@ -23,7 +23,7 @@ fn main() -> error::Result<()> {
     // Buffer specific to process creation
     let mut proc_buf = [0_u8; 50];
     // Buffer for anything else
-    let mut buf = [0_u8; 80];
+    let mut buf = [0_u8; 100];
 
     // daemon::daemonize()?;
 
@@ -34,9 +34,9 @@ fn main() -> error::Result<()> {
     }
 
     println!("Daemon started successfully");
-
-    let victim = kill::choose_victim(&mut proc_buf, &mut buf)?;
+    
+    // kill::choose_victim(&mut proc_buf, &mut buf)?
     // kill::kill_and_wait(victim)?;
-    // Monitor::new()?.poll()
-    Ok(())
+    Monitor::new(proc_buf, buf)?.poll()
+    // Ok(())
 }
