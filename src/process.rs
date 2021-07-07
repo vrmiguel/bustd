@@ -1,4 +1,4 @@
-use std::{fs::{File, read_to_string}, io::{BufRead, BufReader, Cursor, Read}};
+use std::io::Read;
 use std::io::Write;
 
 use libc::getpgid;
@@ -17,7 +17,7 @@ impl Process {
 //         Ok(Self { pid, oom_score })
 //     }
 
-    pub fn from_pid(pid: u32, mut buf: &mut[u8]) -> Result<Self> {
+    pub fn from_pid(pid: u32, mut buf: &mut [u8]) -> Result<Self> {
         let oom_score = Self::oom_score_from_pid(pid, &mut buf).or(Err(Error::ProcessNotFoundError))?;
         Ok(Self { pid, oom_score })
     }
@@ -63,13 +63,13 @@ impl Process {
         Ok(str_from_u8(buf)?)
     }
 
-    pub fn oom_score(&self) -> Option<i16> {
-        let path = format!("/proc/{}/oom_score", self.pid);
-        match read_to_string(path) {
-            Ok(score) => score.trim().parse().ok(),
-            Err(_) => None,
-        }
-    }
+    // pub fn oom_score(&self) -> Option<i16> {
+    //     let path = format!("/proc/{}/oom_score", self.pid);
+    //     match read_to_string(path) {
+    //         Ok(score) => score.trim().parse().ok(),
+    //         Err(_) => None,
+    //     }
+    // }
 
     // pub fn oom_score_from_pid(pid: u32) -> Option<i16> {
     //     let path = format!("/proc/{}/oom_score", pid);

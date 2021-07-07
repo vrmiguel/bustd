@@ -1,6 +1,4 @@
-use std::ffi::CStr;
-
-use crate::{mem_info::MemoryInfo, process::Process, utils::clear_u8};
+use crate::{mem_info::MemoryInfo, process::Process};
 
 mod daemon;
 mod error;
