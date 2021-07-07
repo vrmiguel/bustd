@@ -96,10 +96,15 @@ impl Process {
     /// In order to match the VmRSS value in /proc/<PID>/status, we'll 
     /// multiply the number of pages in `statm` by the page size of our system and then convert
     /// that value to KiB
-    pub fn vm_rss_kib(&self) -> Result<i64> {
-        let path = format!("/proc/{}/statm", self.pid);
-        let contents = read_to_string(path)?;
-        let mut columns = contents.split_ascii_whitespace();
+    pub fn vm_rss_kib(&self, mut buf: &mut [u8]) -> Result<i64> {
+        write!(&mut buf[..], "/proc/{}/statm\0", self.pid)?;
+        let mut columns = {
+            let mut file = utils::file_from_buffer(buf)?;
+            buf.fill(0);
+            file.read(&mut buf)?;
+
+            str_from_u8(buf)?.split_ascii_whitespace()
+        };
         let vm_rss = columns
             .nth(1)
             .ok_or(Error::MalformedStatmError)?
@@ -111,6 +116,23 @@ impl Process {
         let vm_rss_kib = vm_rss * page_size / 1024;
         Ok(vm_rss_kib)
     }
+
+
+    // pub fn vm_rss_kib(&self) -> Result<i64> {
+    //     let path = format!("/proc/{}/statm", self.pid);
+    //     let contents = read_to_string(path)?;
+    //     let mut columns = contents.split_ascii_whitespace();
+    //     let vm_rss = columns
+    //         .nth(1)
+    //         .ok_or(Error::MalformedStatmError)?
+    //         .parse::<i64>()?;
+
+    //     let page_size = utils::page_size()?;
+
+    //     // Converting VM RSS to KiB
+    //     let vm_rss_kib = vm_rss * page_size / 1024;
+    //     Ok(vm_rss_kib)
+    // }
 
     // pub fn oom_score_adj(&self) -> Option<i16> {
     //     let path = format!("/proc/{}/oom_score_adj", self.pid);

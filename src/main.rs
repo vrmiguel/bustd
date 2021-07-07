@@ -28,6 +28,7 @@ fn main() -> error::Result<()> {
     let mut buf = [0_u8; 200];
 
     // daemon::daemonize()?;
+    let this = Process::this(&mut buf);
 
     println!("Daemon started successfully");
     println!("{}", uname_data);

@@ -39,7 +39,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut[u8]) -> Result<Proce
 
     let mut victim = first_process.unwrap();
     // TODO: find another victim if victim.vm_rss_kib() fails here
-    let mut victim_vm_rss_kib = victim.vm_rss_kib()?;
+    let mut victim_vm_rss_kib = victim.vm_rss_kib(&mut buf)?;
 
     for process in processes {
         if victim.oom_score > process.oom_score {
@@ -47,7 +47,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut[u8]) -> Result<Proce
             continue;
         }
 
-        let cur_vm_rss_kib = process.vm_rss_kib()?;
+        let cur_vm_rss_kib = process.vm_rss_kib(&mut buf)?;
         if cur_vm_rss_kib == 0 {
             // Current process is a kernel thread
             continue;
