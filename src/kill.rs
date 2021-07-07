@@ -88,6 +88,9 @@ pub fn kill_process(process: &Process, signal: i32) -> Result<()> {
     Ok(())
 }
 
+/// Tries to kill a process and wait for it to exit
+/// Will first send the victim a SIGTERM and escalate to SIGKILL if necessary
+/// Returns Ok(true) if the victim was successfully terminated
 pub fn kill_and_wait(process: Process) -> Result<bool> {
     let pid = process.pid;
     let now = Instant::now();

@@ -27,20 +27,13 @@ fn main() -> error::Result<()> {
     // Buffer for anything else
     let mut buf = [0_u8; 200];
 
-    let process = Process::this(&mut buf);
-    // {
-    //     dbg!(process.comm_wip(&mut buf)?);   
-    // }
-    let oom_score = process.oom_score;
-    dbg!(oom_score);
-    let oom_score = Process::oom_score_from_pid(process.pid, &mut buf)?;
-    dbg!(oom_score);
     // daemon::daemonize()?;
 
     println!("Daemon started successfully");
     println!("{}", uname_data);
 
     let victim = kill::choose_victim(&mut proc_buf, &mut buf)?;
-    kill::kill_and_wait(victim)?;
+    // kill::kill_and_wait(victim)?;
+    dbg!(utils::page_size());
     Ok(())
 }

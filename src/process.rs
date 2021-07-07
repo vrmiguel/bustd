@@ -92,7 +92,10 @@ impl Process {
         Ok(contents.parse::<i16>()?)
     }
 
-    // TODO: switch to Result
+    /// Reads VmRSS from /proc/<PID>/statm
+    /// In order to match the VmRSS value in /proc/<PID>/status, we'll 
+    /// multiply the number of pages in `statm` by the page size of our system and then convert
+    /// that value to KiB
     pub fn vm_rss_kib(&self) -> Result<i64> {
         let path = format!("/proc/{}/statm", self.pid);
         let contents = read_to_string(path)?;

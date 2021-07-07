@@ -14,12 +14,20 @@ pub struct MemoryInfo {
     pub available_swap_percent: u8,
 }
 
+/// Simple wrapper over libc's sysinfo
 pub fn sys_info() -> Result<sysinfo> {
+
+    // Safety: the all-zero byte pattern is a valid sysinfo struct
     let mut sys_info: sysinfo = unsafe { mem::zeroed() };
 
+    // Safety: sysinfo() is safe and must not fail when passed a valid reference 
     let ret_val = unsafe { libc::sysinfo(&mut sys_info) };
 
     if ret_val != 0 {
+        // The only error that sysinfo() can have happens when
+        // it is supplied an invalid struct sysinfo pointer
+        //
+        // This error should really not happen during this function 
         Err(Error::SysInfoFailedError)?;
     }
 
@@ -31,6 +39,7 @@ impl MemoryInfo {
         let sys_info = sys_info()?;
 
         let mem_unit = sys_info.mem_unit;
+        
         // Converts bytes into megabytes
         const B_TO_MB: u64 = 1000 * 1000;
         let bytes_to_megabytes = |bytes| (bytes / B_TO_MB) * (mem_unit as u64);
@@ -41,7 +50,7 @@ impl MemoryInfo {
         let total_swap_mb = bytes_to_megabytes(sys_info.totalswap);
         let available_swap_mb = bytes_to_megabytes(sys_info.freeswap);
 
-        let available_memory_percent = ratio(available_ram_mb, total_ram_mb);
+        let available_ram_percent = ratio(available_ram_mb, total_ram_mb);
         let available_swap_percent = if total_swap_mb != 0 {
             ratio(available_swap_mb, total_swap_mb)
         } else {
@@ -53,7 +62,7 @@ impl MemoryInfo {
             available_ram_mb,
             total_swap_mb,
             available_swap_mb,
-            available_ram_percent: available_memory_percent,
+            available_ram_percent,
             available_swap_percent,
         })
     }
