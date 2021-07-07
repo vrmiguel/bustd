@@ -7,7 +7,6 @@ edition = "2018"
 
 [dependencies]
 libc      = "0.2.97"
-walkdir   = "2.3.2"
 cfg-if    = "1.0.0"
 daemonize = "0.4.1"
 
