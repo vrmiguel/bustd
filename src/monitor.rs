@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use crate::error::Result;
 use crate::kill;
+use crate::kill::kill_and_wait;
+use crate::memory;
 use crate::memory::MemoryInfo;
 use crate::process::Process;
 
@@ -56,19 +58,48 @@ impl Monitor {
         Ok(Self { memory_info, proc_buf, buf })
     }
 
-    pub fn memory_is_low(&self) {
-
+    fn memory_is_low(&self) -> bool {
+        // TODO: doing this just for testing.
+        // Must account for swap later on and
+        // allow the terminal percentage to be
+        // modified by command-line arg. and/or config. file
+        self.memory_info.available_ram_percent <= 10
     }
 
-    pub fn get_victim(&mut self) -> Result<Process> {
+    fn get_victim(&mut self) -> Result<Process> {
         kill::choose_victim(&mut self.proc_buf, &mut self.buf)
     }
 
+    fn update_memory_stats(&mut self) -> Result<()> {
+        self.memory_info = memory::MemoryInfo::new()?;
+        Ok(())
+    }
+
+    fn free_up_memory(&mut self) -> Result<()> {
+        let victim = self.get_victim()?;
+        
+        // TODO: is this necessary?
+        //
+        // Check for memory stats again to see if the
+        // low-memory situation was solved while
+        // we were searching for our victim
+        self.update_memory_stats()?;
+        if self.memory_is_low() {
+            kill::kill_and_wait(victim)?;
+        }
+        Ok(())
+    }
+
+    // Use the never type here whenever it reaches stable
     pub fn poll(&mut self) -> Result<()> {
         loop {
+            // Update our memory readings
+            self.update_memory_stats()?;
+            if self.memory_is_low() {
+                self.free_up_memory()?;
+            }
+            // Adaptive sleep time
             let sleep_time = self.sleep_time_ms();
-            let victim = self.get_victim()?;
-            dbg!(victim);
             eprintln!("Sleeping {}ms", sleep_time.as_millis());
             
             std::thread::sleep(sleep_time);
