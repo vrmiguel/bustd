@@ -9,34 +9,35 @@ use walkdir::WalkDir;
 use crate::error::{Error, Result};
 use crate::process::Process;
 
-pub fn choose_victim(mut buf: &mut[u8]) -> Result<Process> {
+pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut[u8]) -> Result<Process> {
     let now = Instant::now();
 
-    let mut processes = WalkDir::new("/proc/")
-        .max_depth(1)
-        .into_iter()
-        .filter_map(|e| e.ok())
-        .filter_map(|entry| {
-            entry
-                .path()
-                .file_name()
-                .unwrap_or_else(|| &OsStr::new("0"))
-                .to_str()
-                .unwrap_or_else(|| "0")
-                .trim()
-                .parse::<u32>()
-                .ok()
-        })
-        .filter(|pid| *pid > 1)
-        .filter_map(|pid| Process::from_pid_buf(pid, &mut buf).ok());
+    let mut processes = 
+        WalkDir::new("/proc/")
+            .max_depth(1)
+            .into_iter()
+            .filter_map(|e| e.ok())
+            .filter_map(|entry| {
+                entry
+                    .path()
+                    .file_name()
+                    .unwrap_or_else(|| &OsStr::new("0"))
+                    .to_str()
+                    .unwrap_or_else(|| "0")
+                    .trim()
+                    .parse::<u32>()
+                    .ok()
+            })
+            .filter(|pid| *pid > 1)
+            .filter_map(|pid| Process::from_pid(pid, &mut proc_buf).ok());
 
-    let first_pid = processes.next();
-    if first_pid.is_none() {
+    let first_process = processes.next();
+    if first_process.is_none() {
         // Likely an impossible scenario but we found no process to kill!
         return Err(Error::NoProcessToKillError);
     }
 
-    let mut victim = first_pid.unwrap();
+    let mut victim = first_process.unwrap();
     // TODO: find another victim if victim.vm_rss_kib() fails here
     let mut victim_vm_rss_kib = victim.vm_rss_kib()?;
 
@@ -56,9 +57,9 @@ pub fn choose_victim(mut buf: &mut[u8]) -> Result<Process> {
             continue;
         }
 
-        let cur_oom_score_adj = match process.oom_score_adj() {
-            Some(oom_score_adj) => oom_score_adj,
-            None => continue,
+        let cur_oom_score_adj = match process.oom_score_adj(&mut buf) {
+            Ok(oom_score_adj) => oom_score_adj,
+            Err(_) => continue,
         };
 
         if cur_oom_score_adj == -1000 {
@@ -74,7 +75,7 @@ pub fn choose_victim(mut buf: &mut[u8]) -> Result<Process> {
     println!(
         "[LOG] Victim => pid: {}, comm: {}, oom_score: {}",
         victim.pid,
-        victim.comm().unwrap_or_else(|_| "unknown".into()).trim(),
+        victim.comm(&mut buf).unwrap_or_else(|_| "unknown".into()).trim(),
         victim.oom_score
     );
 

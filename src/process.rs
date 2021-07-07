@@ -12,21 +12,21 @@ pub struct Process {
 }
 
 impl Process {
-    pub fn from_pid(pid: u32) -> Result<Self> {
-        let oom_score = Self::oom_score_from_pid(pid).ok_or(Error::ProcessNotFoundError)?;
+//     pub fn from_pid(pid: u32) -> Result<Self> {
+//         let oom_score = Self::oom_score_from_pid(pid).ok_or(Error::ProcessNotFoundError)?;
+//         Ok(Self { pid, oom_score })
+//     }
+
+    pub fn from_pid(pid: u32, mut buf: &mut[u8]) -> Result<Self> {
+        let oom_score = Self::oom_score_from_pid(pid, &mut buf).or(Err(Error::ProcessNotFoundError))?;
         Ok(Self { pid, oom_score })
     }
 
-    pub fn from_pid_buf(pid: u32, mut buf: &mut[u8]) -> Result<Self> {
-        let oom_score = Self::oom_score_from_pid_wip(pid, &mut buf).or(Err(Error::ProcessNotFoundError))?;
-        Ok(Self { pid, oom_score })
-    }
-
-    pub fn this() -> Self {
+    pub fn this(buf: &mut [u8]) -> Self {
         let pid = unsafe { libc::getpid() } as u32;
 
         // Safety: surely the current process must exist
-        Self::from_pid(pid).unwrap()
+        Self::from_pid(pid, buf).unwrap()
     }
 
     /// Return true if the process is alive
@@ -47,12 +47,12 @@ impl Process {
     //     read_to_string(file).ok()
     // }
 
-    pub fn comm(&self) -> Result<String> {
-        let path = format!("/proc/{}/comm", self.pid);
-        Ok(read_to_string(path)?)
-    }
+    // pub fn comm(&self) -> Result<String> {
+    //     let path = format!("/proc/{}/comm", self.pid);
+    //     Ok(read_to_string(path)?)
+    // }
 
-    pub fn comm_wip<'a>(&self, mut buf: &'a mut [u8]) -> Result<&'a str> {
+    pub fn comm<'a>(&self, mut buf: &'a mut [u8]) -> Result<&'a str> {
         write!(&mut buf[..], "/proc/{}/comm\0", self.pid)?;
         {
             let mut file = utils::file_from_buffer(buf)?;
@@ -71,15 +71,15 @@ impl Process {
         }
     }
 
-    pub fn oom_score_from_pid(pid: u32) -> Option<i16> {
-        let path = format!("/proc/{}/oom_score", pid);
-        match read_to_string(path) {
-            Ok(score) => score.trim().parse().ok(),
-            Err(_) => None,
-        }
-    }
+    // pub fn oom_score_from_pid(pid: u32) -> Option<i16> {
+    //     let path = format!("/proc/{}/oom_score", pid);
+    //     match read_to_string(path) {
+    //         Ok(score) => score.trim().parse().ok(),
+    //         Err(_) => None,
+    //     }
+    // }
 
-    pub fn oom_score_from_pid_wip(pid: u32, mut buf: &mut [u8]) -> Result<i16> {
+    pub fn oom_score_from_pid(pid: u32, mut buf: &mut [u8]) -> Result<i16> {
         write!(&mut buf[..], "/proc/{}/oom_score\0", pid)?;
         let contents = {
             let mut file = utils::file_from_buffer(buf)?;
@@ -109,11 +109,24 @@ impl Process {
         Ok(vm_rss_kib)
     }
 
-    pub fn oom_score_adj(&self) -> Option<i16> {
-        let path = format!("/proc/{}/oom_score_adj", self.pid);
-        match read_to_string(path) {
-            Ok(score) => score.trim().parse().ok(),
-            Err(_) => None,
-        }
+    // pub fn oom_score_adj(&self) -> Option<i16> {
+    //     let path = format!("/proc/{}/oom_score_adj", self.pid);
+    //     match read_to_string(path) {
+    //         Ok(score) => score.trim().parse().ok(),
+    //         Err(_) => None,
+    //     }
+    // }
+
+    pub fn oom_score_adj(&self, mut buf: &mut [u8]) -> Result<i16> {
+        write!(&mut buf[..], "/proc/{}/oom_score_adj\0", self.pid)?;
+        let contents = {
+            let mut file = utils::file_from_buffer(buf)?;
+            buf.fill(0);
+            file.read(&mut buf)?;
+
+            str_from_u8(buf)?.trim()
+        };
+
+        Ok(contents.parse::<i16>()?)
     }
 }

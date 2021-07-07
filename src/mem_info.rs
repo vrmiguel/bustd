@@ -14,15 +14,21 @@ pub struct MemoryInfo {
     pub available_swap_percent: u8,
 }
 
+pub fn sys_info() -> Result<sysinfo> {
+    let mut sys_info: sysinfo = unsafe { mem::zeroed() };
+
+    let ret_val = unsafe { libc::sysinfo(&mut sys_info) };
+
+    if ret_val != 0 {
+        Err(Error::SysInfoFailedError)?;
+    }
+
+    Ok(sys_info)
+}
+
 impl MemoryInfo {
     pub fn new() -> Result<MemoryInfo> {
-        let mut sys_info: sysinfo = unsafe { mem::zeroed() };
-
-        let ret_val = unsafe { libc::sysinfo(&mut sys_info) };
-
-        if ret_val != 0 {
-            Err(Error::SysInfoFailedError)?;
-        }
+        let sys_info = sys_info()?;
 
         let mem_unit = sys_info.mem_unit;
         // Converts bytes into megabytes
