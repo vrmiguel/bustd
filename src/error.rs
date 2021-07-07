@@ -10,6 +10,15 @@ pub enum Error {
     IoError { reason: String },
     DaemonizeError { error: DaemonizeError },
     UnicodeError { error: Utf8Error },
+    PermissionError,
+
+    // mlockall-specific errors
+    /// 
+    CouldNotLockMemoryError,
+    TooMuchMemoryToLockError,
+    InvalidFlagsError,
+    // Should not happen but better safe than sorry
+    UnknownMlockallError,
 
     // Errors that are likely impossible to happen
     InvalidLinuxVersionError,

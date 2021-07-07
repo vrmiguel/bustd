@@ -5,15 +5,7 @@ use libc::sysconf;
 use libc::_SC_PAGESIZE;
 use libc::{geteuid, getpwuid_r, passwd};
 
-use crate::mem_info;
-
 use crate::error::{Error, Result};
-
-pub fn procs() -> Result<u16> {
-    let sys_info = mem_info::sys_info()?;
-
-    Ok(sys_info.procs)
-}
 
 pub fn page_size() -> Result<i64> {
     let page_size = unsafe { sysconf(_SC_PAGESIZE) };
