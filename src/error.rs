@@ -16,7 +16,7 @@ pub enum Error {
     MalformedStatmError,
     ParseIntError,
     NoProcessToKillError,
-    PageSizeFailedError,
+    SysconfFailedError,
     SysInfoFailedError,
 }
 
