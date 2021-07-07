@@ -16,18 +16,17 @@ pub struct MemoryInfo {
 
 /// Simple wrapper over libc's sysinfo
 pub fn sys_info() -> Result<sysinfo> {
-
     // Safety: the all-zero byte pattern is a valid sysinfo struct
     let mut sys_info: sysinfo = unsafe { mem::zeroed() };
 
-    // Safety: sysinfo() is safe and must not fail when passed a valid reference 
+    // Safety: sysinfo() is safe and must not fail when passed a valid reference
     let ret_val = unsafe { libc::sysinfo(&mut sys_info) };
 
     if ret_val != 0 {
         // The only error that sysinfo() can have happens when
         // it is supplied an invalid struct sysinfo pointer
         //
-        // This error should really not happen during this function 
+        // This error should really not happen during this function
         Err(Error::SysInfoFailedError)?;
     }
 
@@ -39,7 +38,7 @@ impl MemoryInfo {
         let sys_info = sys_info()?;
 
         let mem_unit = sys_info.mem_unit;
-        
+
         // Converts bytes into megabytes
         const B_TO_MB: u64 = 1000 * 1000;
         let bytes_to_megabytes = |bytes| (bytes / B_TO_MB) * (mem_unit as u64);

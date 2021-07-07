@@ -1,4 +1,4 @@
-use crate::{mem_info::MemoryInfo, process::Process};
+use crate::{mem_info::MemoryInfo, monitor::Monitor, process::Process};
 
 mod daemon;
 mod error;
@@ -18,21 +18,18 @@ fn main() -> error::Result<()> {
     println!("{}", MemoryInfo::new()?);
 
     // In order to correctly use `mlockall`, we'll try our best to avoid heap allocations and
-    // reuse these buffers right here, even though it makes the code less readable
-    
-    // Buffer specific to process creation 
+    // reuse these buffers right here, even though it makes the code less readable.
+    // Buffer specific to process creation
     let mut proc_buf = [0_u8; 50];
     // Buffer for anything else
     let mut buf = [0_u8; 200];
 
     // daemon::daemonize()?;
-    let this = Process::this(&mut buf);
 
     println!("Daemon started successfully");
     println!("{}", uname_data);
 
     let victim = kill::choose_victim(&mut proc_buf, &mut buf)?;
     // kill::kill_and_wait(victim)?;
-    dbg!(utils::page_size());
-    Ok(())
+    Monitor::new()?.poll()
 }
