@@ -3,7 +3,7 @@ use std::{ffi::CStr, mem, ptr};
 
 use libc::sysconf;
 use libc::_SC_PAGESIZE;
-use libc::{getpwuid_r, getuid, passwd};
+use libc::{getpwuid_r, geteuid, passwd};
 
 use crate::mem_info;
 
@@ -29,8 +29,12 @@ pub unsafe fn get_username() -> Option<String> {
     let mut result = ptr::null_mut();
     let mut passwd: passwd = mem::zeroed();
 
+    // Gets the effective user ID of the calling process
+    // The POSIX Programmer's Manual states this function shouldn't fail here
+    let uid = geteuid();
+
     let getpwuid_r_code = getpwuid_r(
-        getuid(),
+        uid,
         &mut passwd,
         buf.as_mut_ptr(),
         buf.len(),
@@ -38,13 +42,14 @@ pub unsafe fn get_username() -> Option<String> {
     );
 
     if getpwuid_r_code == 0 && !result.is_null() {
+        // If getpwuid_r succeeded, let's get the username from it
         let username = CStr::from_ptr(passwd.pw_name);
         let username = String::from_utf8_lossy(username.to_bytes());
 
-        Some(username.into())
-    } else {
-        None
+        return Some(username.into())
     }
+
+    None
 }
 
 
