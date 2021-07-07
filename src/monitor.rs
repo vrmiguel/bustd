@@ -99,7 +99,7 @@ impl Monitor {
             }
             // Adaptive sleep time
             let sleep_time = self.sleep_time_ms();
-            eprintln!("Sleeping {}ms", sleep_time.as_millis());
+            // eprintln!("Sleeping {}ms", sleep_time.as_millis());
             
             std::thread::sleep(sleep_time);
         }

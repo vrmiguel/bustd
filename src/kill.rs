@@ -65,7 +65,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
             continue;
         }
 
-        eprintln!("[DBG] New victim with PID={}!", process.pid);
+        // eprintln!("[DBG] New victim with PID={}!", process.pid);
         victim = process;
         victim_vm_rss_kib = cur_vm_rss_kib;
     }
