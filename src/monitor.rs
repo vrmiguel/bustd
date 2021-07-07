@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::error::Result;
-use crate::mem_info::MemoryInfo;
+use crate::memory::MemoryInfo;
 
 pub struct Monitor {
     memory_info: MemoryInfo,
@@ -52,10 +52,15 @@ impl Monitor {
         Ok(Self { memory_info })
     }
 
+    pub fn low_memory(&self) {
+
+    }
+
     pub fn poll(&self) -> Result<()> {
         loop {
             let sleep_time = self.sleep_time_ms();
-            println!("Sleepy time: {}ms", sleep_time.as_millis());
+            eprintln!("Sleeping {}ms", sleep_time.as_millis());
+            
             std::thread::sleep(sleep_time);
         }
         Ok(())

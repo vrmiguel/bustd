@@ -1,12 +1,13 @@
-use crate::{mem_info::MemoryInfo, monitor::Monitor, process::Process};
+use crate::{memory::{MemoryInfo, lock_memory_pages}, monitor::Monitor};
 
 mod daemon;
 mod error;
 mod kill;
 mod linux_version;
-mod mem_info;
+mod memory;
 mod monitor;
 mod process;
+mod errno;
 mod uname;
 mod utils;
 
