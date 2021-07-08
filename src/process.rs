@@ -48,9 +48,9 @@ impl Process {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
             file.read(&mut buf)?;
-        }
+        } 
 
-        Ok(str_from_u8(buf)?)
+        str_from_u8(buf)
     }
 
     pub fn oom_score_from_pid(pid: u32, mut buf: &mut [u8]) -> Result<i16> {
