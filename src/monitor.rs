@@ -6,10 +6,16 @@ use crate::memory;
 use crate::memory::MemoryInfo;
 use crate::process::Process;
 
+enum MemoryStatus {
+    NearTerminal(f32),
+    Okay
+}
+
 pub struct Monitor {
     memory_info: MemoryInfo,
     proc_buf: [u8; 50],
     buf: [u8; 100],
+    status: MemoryStatus
 }
 
 impl Monitor {
@@ -51,10 +57,15 @@ impl Monitor {
         Duration::from_millis(time_to_sleep as u64)
     }
 
-    pub fn new(proc_buf: [u8; 50], buf: [u8; 100]) -> Result<Self> {
+    pub fn new(proc_buf: [u8; 50], mut buf: [u8; 100]) -> Result<Self> {
         let memory_info = MemoryInfo::new()?;
+        let status = if memory_info.available_ram_percent <= 15 {
+            MemoryStatus::NearTerminal(memory::pressure::pressure_some_avg10(&mut buf)?)
+        } else {
+            MemoryStatus::Okay
+        };
 
-        Ok(Self { memory_info, proc_buf, buf })
+        Ok(Self { memory_info, proc_buf, buf, status })
     }
 
     fn memory_is_low(&self) -> bool {
@@ -62,7 +73,8 @@ impl Monitor {
         // Must account for swap later on and
         // allow the terminal percentage to be
         // modified by command-line arg. and/or config. file
-        self.memory_info.available_ram_percent <= 10
+
+        matches!(self.status, MemoryStatus::NearTerminal(psi) if psi >= 30.0)
     }
 
     fn get_victim(&mut self) -> Result<Process> {
@@ -71,6 +83,13 @@ impl Monitor {
 
     fn update_memory_stats(&mut self) -> Result<()> {
         self.memory_info = memory::MemoryInfo::new()?;
+        self.status = if self.memory_info.available_ram_percent <= 15 {
+            let psi = memory::pressure::pressure_some_avg10(&mut self.buf)?;
+            eprintln!("Near terminal! PSI: {}", psi);
+            MemoryStatus::NearTerminal(psi)
+        } else {
+            MemoryStatus::Okay
+        };
         Ok(())
     }
 

@@ -23,7 +23,7 @@ fn main() -> error::Result<()> {
     // Buffer specific to process creation
     let proc_buf = [0_u8; 50];
     // Buffer for anything else
-    let mut buf = [0_u8; 100];
+    let buf = [0_u8; 100];
 
     // daemon::daemonize()?;
 
@@ -33,11 +33,8 @@ fn main() -> error::Result<()> {
         eprintln!("Memory pages locked!");
     }
 
-    let avg10 = memory::pressure::pressure_some_avg10(&mut buf)?;
-    dbg!(avg10);
-
     println!("Daemon started successfully");
     
-    // Monitor::new(proc_buf, buf)?.poll()
-    Ok(())
+    Monitor::new(proc_buf, buf)?.poll()
+    // Ok(())
 }
