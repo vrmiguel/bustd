@@ -23,7 +23,9 @@ pub enum Error {
     // Errors that are likely impossible to happen
     InvalidLinuxVersionError,
     MalformedStatmError,
+    MalformedPressureFileError,
     ParseIntError,
+    ParseFloatError,
     NoProcessToKillError,
     SysconfFailedError,
     SysInfoFailedError,
@@ -42,6 +44,12 @@ impl From<std::io::Error> for Error {
 impl From<std::num::ParseIntError> for Error {
     fn from(_: std::num::ParseIntError) -> Self {
         Self::ParseIntError
+    }
+}
+
+impl From<std::num::ParseFloatError> for Error {
+    fn from(_: std::num::ParseFloatError) -> Self {
+        Self::ParseFloatError
     }
 }
 
