@@ -74,7 +74,7 @@ impl Monitor {
         // allow the terminal percentage to be
         // modified by command-line arg. and/or config. file
 
-        matches!(self.status, MemoryStatus::NearTerminal(psi) if psi >= 30.0)
+        matches!(self.status, MemoryStatus::NearTerminal(psi) if psi >= 25.0)
     }
 
     fn get_victim(&mut self) -> Result<Process> {
