@@ -25,7 +25,7 @@ fn main() -> error::Result<()> {
     // Buffer for anything else
     let buf = [0_u8; 100];
 
-    daemon::daemonize()?;
+    // daemon::daemonize()?;
 
     if let Err(err) = lock_memory_pages() {
         eprintln!("Failed to lock memory pages: {:?}. Continuing anyway.", err);
