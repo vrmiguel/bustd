@@ -28,7 +28,6 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
         .filter(|pid| *pid > 1)
         .filter_map(|pid| Process::from_pid(pid, &mut proc_buf).ok());
 
-
     let first_process = processes.next();
     if first_process.is_none() {
         // Likely an impossible scenario but we found no process to kill!

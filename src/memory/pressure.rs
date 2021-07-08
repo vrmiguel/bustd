@@ -1,11 +1,8 @@
 use std::fs::File;
 use std::io::Read;
 
-use libc::{pollfd, poll};
-use libc::{O_NONBLOCK, O_RDWR};
-
-use crate::utils::str_from_u8;
 use crate::error::{Error, Result};
+use crate::utils::str_from_u8;
 
 macro_rules! malformed {
     () => {
@@ -18,7 +15,6 @@ macro_rules! malformed {
 /// Returns the avg10 value in the `some` row of `/proc/pressure/memory`, which
 /// indicates the absolute stall time (in us) in which at least some tasks were stalled
 pub fn pressure_some_avg10(mut buf: &mut [u8]) -> Result<f32> {
-
     let mut file = File::open("/proc/pressure/memory")?;
     buf.fill(0);
     // `buf` won't be large enough to fit all of `/proc/pressure/memory`
@@ -30,13 +26,12 @@ pub fn pressure_some_avg10(mut buf: &mut [u8]) -> Result<f32> {
     if let Some(indicator) = words.next() {
         // This has to be the case but checking to be sure
         if indicator == "some" {
-            eprintln!("is some!");
             let entry = words.next().ok_or(malformed!())?;
-            
+
             // The entry is of the form `avg10=0.00`
             // We'll break this string in two in order to parse the value on the right-hand side
             let equals_pos = entry.find('=').ok_or(malformed!())?;
-            let avg10 = entry.get(equals_pos+1..).ok_or(malformed!())?;
+            let avg10 = entry.get(equals_pos + 1..).ok_or(malformed!())?;
             let avg10: f32 = avg10.trim().parse()?;
             return Ok(avg10);
         }

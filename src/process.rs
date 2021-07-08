@@ -48,7 +48,7 @@ impl Process {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
             file.read(&mut buf)?;
-        } 
+        }
 
         str_from_u8(buf)
     }

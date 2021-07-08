@@ -8,14 +8,14 @@ use crate::process::Process;
 
 enum MemoryStatus {
     NearTerminal(f32),
-    Okay
+    Okay,
 }
 
 pub struct Monitor {
     memory_info: MemoryInfo,
     proc_buf: [u8; 50],
     buf: [u8; 100],
-    status: MemoryStatus
+    status: MemoryStatus,
 }
 
 impl Monitor {
@@ -65,7 +65,12 @@ impl Monitor {
             MemoryStatus::Okay
         };
 
-        Ok(Self { memory_info, proc_buf, buf, status })
+        Ok(Self {
+            memory_info,
+            proc_buf,
+            buf,
+            status,
+        })
     }
 
     fn memory_is_low(&self) -> bool {
@@ -95,7 +100,7 @@ impl Monitor {
 
     fn free_up_memory(&mut self) -> Result<()> {
         let victim = self.get_victim()?;
-        
+
         // TODO: is this necessary?
         //
         // Check for memory stats again to see if the
@@ -119,7 +124,7 @@ impl Monitor {
             // Adaptive sleep time
             let sleep_time = self.sleep_time_ms();
             // eprintln!("Sleeping {}ms", sleep_time.as_millis());
-            
+
             std::thread::sleep(sleep_time);
         }
         Ok(())

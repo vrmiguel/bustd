@@ -14,7 +14,5 @@ cfg_if! {
 }
 
 pub fn errno() -> i32 {
-    unsafe {
-        (*_errno()) as i32
-    }
+    unsafe { (*_errno()) as i32 }
 }

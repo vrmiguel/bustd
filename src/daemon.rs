@@ -8,12 +8,12 @@ pub fn daemonize() -> Result<()> {
     let username = unsafe { utils::get_username() }.unwrap_or_else(|| "nobody".into());
 
     // Save in ~/ instead of /tmp/ ?
-    let stdout = File::create("/tmp/oomfd.out")?;
-    let stderr = File::create("/tmp/oomfd.err")?;
+    let stdout = File::create("/tmp/bustd.out")?;
+    let stderr = File::create("/tmp/bustd.err")?;
 
     let daemonize = Daemonize::new()
         .user(&*username)
-        .pid_file("/tmp/oomfd.pid")
+        .pid_file("/tmp/bustd.pid")
         .chown_pid_file(false)
         .working_directory("/tmp")
         .stdout(stdout)
@@ -21,7 +21,7 @@ pub fn daemonize() -> Result<()> {
 
     daemonize.start()?;
 
-    println!("[LOG] User {} starting the daemon.", username);
+    println!("[LOG] User {} has started the daemon", username);
 
     Ok(())
 }

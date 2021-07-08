@@ -7,13 +7,19 @@ pub enum Error {
     // Only possible uname error: "buf is invalid"
     UnameError,
     ProcessNotFoundError,
-    IoError { reason: String },
-    DaemonizeError { error: DaemonizeError },
-    UnicodeError { error: Utf8Error },
+    IoError {
+        reason: String,
+    },
+    DaemonizeError {
+        error: DaemonizeError,
+    },
+    UnicodeError {
+        error: Utf8Error,
+    },
     PermissionError,
 
     // mlockall-specific errors
-    /// 
+    ///
     CouldNotLockMemoryError,
     TooMuchMemoryToLockError,
     InvalidFlagsError,
