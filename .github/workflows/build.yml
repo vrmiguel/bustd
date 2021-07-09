@@ -3,8 +3,8 @@ on: [push, pull_request]
 name: build-and-test
 
 jobs:
-  armv7:
-    name: Ubuntu 18.04 (for ARMv7)
+  armv7-glibc:
+    name: Ubuntu 18.04 (for ARMv7 - glibc)
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
@@ -40,7 +40,46 @@ jobs:
         with:
           name: 'bustd-linux-armv7-glibc'
           path: target/armv7-unknown-linux-gnueabihf/release/bustd
+
+  armv7-musl:
+    name: Ubuntu 20.01 (for ARMv7 - musl)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: armv7-unknown-linux-musleabihf
+          override: true
+
+      - name: Install binutils-arm-none-eabi
+        run: |
+          sudo apt-get update
+          sudo apt-get install binutils-arm-none-eabi
+      
+      - name: Run cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --release --target=armv7-unknown-linux-musleabihf
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: test
+          args: --target=armv7-unknown-linux-musleabihf
           
+      - name: Strip binary
+        run: arm-none-eabi-strip target/armv7-unknown-linux-musleabihf/release/bustd
+          
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: 'bustd-linux-armv7-musl'
+          path: target/armv7-unknown-linux-musleabihf/release/bustd
+
   ubuntu:
     name: Ubuntu 20.04
     runs-on: ubuntu-latest
