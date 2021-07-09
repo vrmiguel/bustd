@@ -33,6 +33,11 @@ The `sysinfo` syscall is one order of magnitude faster, at least according to [t
 
 As `bustd` can't solely rely on the free RAM readings of `sysinfo`, we check for memory stress through [Pressure Stall Information](https://www.kernel.org/doc/html/v5.8/accounting/psi.html).
 
+### `bustd` locks all pages mapped into its address space
+
+Much like `earlyoom`, `bustd` uses [`mlockall`](https://www.ibm.com/docs/en/aix/7.2?topic=m-mlockall-munlockall-subroutine) to avoid being sent to swap, which allows the daemon to remain responsive even when the system memory is under heavy load and susceptible to [thrashing](https://en.wikipedia.org/wiki/Thrashing_(computer_science)).
+
+
 
 
 ## TODO
