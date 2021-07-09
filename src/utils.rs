@@ -13,7 +13,9 @@ pub fn page_size() -> Result<i64> {
         return Err(Error::SysconfFailedError);
     }
 
-    Ok(page_size)
+    // The type of page_size differs between architectures
+    // so we use .into() to convert to i64 if necessary
+    Ok(page_size.into())
 }
 
 pub unsafe fn get_username() -> Option<String> {
@@ -42,10 +44,6 @@ pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
 
     Ok(std::str::from_utf8(&buf[0..first_nul_idx])?)
-}
-
-pub fn clear_u8(buf: &mut [u8]) {
-    buf.fill(0);
 }
 
 // pub fn file_from_buffer(buf: [u8; 50]) -> Result<([u8; 50], File)> {

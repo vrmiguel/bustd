@@ -1,10 +1,10 @@
 [package]
-name = "bust"
+name = "bustd"
 authors = ["Vinícius Rodrigues Miguel <vrmiguel99@gmail.com>"]
 version = "0.1.0"
 edition = "2018"
 readme = "README.md"
-repository = "https://github.com/vrmiguel/bust"
+repository = "https://github.com/vrmiguel/bustd"
 license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

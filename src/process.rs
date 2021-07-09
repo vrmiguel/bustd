@@ -21,11 +21,13 @@ impl Process {
         Ok(Self { pid, oom_score })
     }
 
-    pub fn this(buf: &mut [u8]) -> Self {
+    #[allow(dead_code)]
+    /// Returns the current process represented as a Process struct
+    /// Unused in the actual code but very often used when debugging
+    pub fn this(buf: &mut [u8]) -> Result<Self> {
         let pid = unsafe { libc::getpid() } as u32;
 
-        // Safety: surely the current process must exist
-        Self::from_pid(pid, buf).unwrap()
+        Self::from_pid(pid, buf)
     }
 
     /// Return true if the process is alive
