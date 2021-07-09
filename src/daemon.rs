@@ -5,9 +5,9 @@ use daemonize::Daemonize;
 use crate::{error::Result, utils};
 
 pub fn daemonize() -> Result<()> {
-    let username = unsafe { utils::get_username() }.unwrap_or_else(|| "nobody".into());
+    // TODO: check if running as sudo
+    let username = utils::get_username().unwrap_or_else(|| "nobody".into());
 
-    // Save in ~/ instead of /tmp/ ?
     let stdout = File::create("/tmp/bustd.out")?;
     let stderr = File::create("/tmp/bustd.err")?;
 
@@ -21,7 +21,7 @@ pub fn daemonize() -> Result<()> {
 
     daemonize.start()?;
 
-    println!("[LOG] User {} has started the daemon", username);
+    println!("[LOG] User {} has started the daemon successfully.", username);
 
     Ok(())
 }
