@@ -12,6 +12,13 @@ license = "MIT"
 libc      = "0.2.97"
 cfg-if    = "1.0.0"
 daemonize = "0.4.1"
+no-panic  = "0.1.15"
+
+
+# Optimize debug in order to 
+# run [no_panic] 
+[profile.dev]
+opt-level = 3
 
 [profile.release]
 lto = true

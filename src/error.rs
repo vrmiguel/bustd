@@ -1,4 +1,4 @@
-use std::str::Utf8Error;
+use std::{any::Any, str::Utf8Error};
 
 use daemonize::DaemonizeError;
 
@@ -25,11 +25,13 @@ pub enum Error {
     InvalidFlagsError,
     // Should not happen but better safe than sorry
     UnknownMlockallError,
+    ThreadError { error: Box<dyn Any + Send + 'static> },
 
     // Errors that are likely impossible to happen
     InvalidLinuxVersionError,
     MalformedStatmError,
     MalformedPressureFileError,
+    StringFromBytesError,
     ParseIntError,
     ParseFloatError,
     NoProcessToKillError,
@@ -68,5 +70,11 @@ impl From<DaemonizeError> for Error {
 impl From<std::str::Utf8Error> for Error {
     fn from(error: std::str::Utf8Error) -> Self {
         Self::UnicodeError { error }
+    }
+}
+
+impl From<Box<dyn Any + Send + 'static>> for Error {
+    fn from(error: Box<dyn Any + Send + 'static>) -> Self {
+        Self::ThreadError { error }
     }
 }

@@ -1,16 +1,16 @@
 use libc::{c_int, mlockall};
 use libc::{EAGAIN, EINVAL, ENOMEM, EPERM};
 use libc::{MCL_CURRENT, MCL_FUTURE};
+use no_panic::no_panic;
 
 use crate::errno::errno;
+use crate::error::{Error, Result};
+
 
 // TODO: use cc crate to get MCL_ONFAULT
 const MCL_ONFAULT: i32 = 4;
 
-use crate::error::{Error, Result};
-
-// The mlockall() function may fail if:
-
+#[no_panic]
 pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
     // Safety: mlockall is safe
     let err = unsafe { mlockall(flags) };
@@ -37,10 +37,11 @@ pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
 }
 
 pub fn lock_memory_pages() -> Result<()> {
-    if let Err(err) = _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT) {
-        eprintln!("First try at mlockall failed: {:?}", err);
-    } else {
-        return Ok(());
+    match _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT) {
+        Err(err) => {
+            eprintln!("First try at mlockall failed: {:?}", err);
+        },
+        Ok(_) => return Ok(())
     }
 
     _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE)

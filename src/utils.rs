@@ -1,12 +1,14 @@
 use std::fs::File;
-use std::{ffi::CStr, mem, ptr};
+use std::{ffi::CStr, mem, ptr, str, panic};
 
 use libc::sysconf;
 use libc::_SC_PAGESIZE;
 use libc::{geteuid, getpwuid_r, passwd};
+use no_panic::no_panic;
 
 use crate::error::{Error, Result};
 
+#[no_panic]
 pub fn page_size() -> Result<i64> {
     let page_size = unsafe { sysconf(_SC_PAGESIZE) };
     if page_size == -1 {
@@ -17,6 +19,7 @@ pub fn page_size() -> Result<i64> {
     // so we use .into() to convert to i64 if necessary
     Ok(page_size.into())
 }
+
 
 pub unsafe fn get_username() -> Option<String> {
     let mut buf = [0; 2048];
@@ -40,10 +43,20 @@ pub unsafe fn get_username() -> Option<String> {
     None
 }
 
+
+#[no_panic]
+#[allow(improper_ctypes_definitions)]
+extern "C" fn from_utf8(slice: &[u8]) -> Result<&str> {
+    Ok(str::from_utf8(slice)?)
+}
+
+#[no_panic]
 pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
 
-    Ok(std::str::from_utf8(&buf[0..first_nul_idx])?)
+    let bytes = buf.get(0..first_nul_idx).ok_or(Error::StringFromBytesError)?;
+    
+    from_utf8(bytes)
 }
 
 // pub fn file_from_buffer(buf: [u8; 50]) -> Result<([u8; 50], File)> {

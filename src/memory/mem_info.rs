@@ -1,6 +1,7 @@
-use libc::sysinfo;
-
 use std::{fmt, mem};
+
+use libc::sysinfo;
+use no_panic::no_panic;
 
 use crate::error::{Error, Result};
 
@@ -14,6 +15,7 @@ pub struct MemoryInfo {
     pub available_swap_percent: u8,
 }
 
+#[no_panic]
 /// Simple wrapper over libc's sysinfo
 pub fn sys_info() -> Result<sysinfo> {
     // Safety: the all-zero byte pattern is a valid sysinfo struct

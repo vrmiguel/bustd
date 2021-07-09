@@ -10,13 +10,16 @@ macro_rules! malformed {
     };
 }
 
-// some avg10=0.00 avg60=0.00 avg300=0.00 total=0
-
 /// Returns the avg10 value in the `some` row of `/proc/pressure/memory`, which
-/// indicates the absolute stall time (in us) in which at least some tasks were stalled
+/// indicates the absolute stall time (in us) in which at least some tasks were stalled.
+///
+/// The data we're reading looks like:
+/// ```some avg10=0.00 avg60=0.00 avg300=0.00 total=0```
+///
 pub fn pressure_some_avg10(mut buf: &mut [u8]) -> Result<f32> {
     let mut file = File::open("/proc/pressure/memory")?;
     buf.fill(0);
+
     // `buf` won't be large enough to fit all of `/proc/pressure/memory`
     // but will be large enough to hold at least the first line, which has the datas we want
     file.read(&mut buf)?;
