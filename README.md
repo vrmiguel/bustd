@@ -37,7 +37,18 @@ As `bustd` can't solely rely on the free RAM readings of `sysinfo`, we check for
 
 Much like `earlyoom`, `bustd` uses [`mlockall`](https://www.ibm.com/docs/en/aix/7.2?topic=m-mlockall-munlockall-subroutine) to avoid being sent to swap, which allows the daemon to remain responsive even when the system memory is under heavy load and susceptible to [thrashing](https://en.wikipedia.org/wiki/Thrashing_(computer_science)).
 
+### Checks for Pressure Stall Information
 
+The Linux kernel, since version 4.20 (and built with `CONFIG_PSI=y`), presents canonical new pressure metrics for memory, CPU, and IO.
+In the words of [Facebook Incubator](https://facebookmicrosites.github.io/psi/docs/overview):
+
+```
+PSI stats are like barometers that provide fair warning of impending resource 
+shortages, enabling you to take more proactive, granular, and nuanced steps 
+when resources start becoming scarce.
+```
+
+More specifically, `bustd` checks for how long, in microseconds, processes have stalled in the last 10 seconds. By default, `bustd` will kill a process when processes have stalled for 25 microseconds in the last ten seconds.
 
 
 ## TODO
