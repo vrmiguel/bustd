@@ -1,19 +1,37 @@
-use std::fs::File;
+use std::fs::OpenOptions;
 
 use daemonize::Daemonize;
 
 use crate::{error::Result, utils};
 
 pub fn daemonize() -> Result<()> {
-    // TODO: check if running as sudo
-    let username = utils::get_username().unwrap_or_else(|| "nobody".into());
 
-    let stdout = File::create("/tmp/bustd.out")?;
-    let stderr = File::create("/tmp/bustd.err")?;
+    let running_as_sudo = utils::running_as_sudo();
+
+    let username = if running_as_sudo {
+        "root".into()
+    } else {
+        utils::get_username().unwrap_or_else(|| "nobody".into())
+    };
+
+    let open_opts = OpenOptions::new()
+        .truncate(false)
+        .create(true)
+        .write(true)
+        .to_owned();
+    
+    let (stdout_path, stderr_path, pidfile_path) = if running_as_sudo {
+        ("/var/log/bustd.out", "/var/log/bustd.err", "/var/run/bustd.pid")
+    } else {
+        ("/tmp/bustd.out", "/tmp/bustd.err", "/tmp/bustd.pid")
+    };
+    
+    let stdout = open_opts.open(stdout_path)?;
+    let stderr = open_opts.open(stderr_path)?;
 
     let daemonize = Daemonize::new()
         .user(&*username)
-        .pid_file("/tmp/bustd.pid")
+        .pid_file(pidfile_path)
         .chown_pid_file(false)
         .working_directory("/tmp")
         .stdout(stdout)
