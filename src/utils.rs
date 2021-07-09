@@ -3,10 +3,23 @@ use std::{ffi::CStr, mem, ptr, str};
 
 use libc::sysconf;
 use libc::_SC_PAGESIZE;
-use libc::{geteuid, getpwuid_r, passwd};
+use libc::{getpwuid_r, passwd};
 use no_panic::no_panic;
 
 use crate::error::{Error, Result};
+
+#[no_panic]
+/// Gets the effective user ID of the calling process
+fn effective_user_id() -> u32 {
+    // Safety: the POSIX Programmer's Manual states that
+    // geteuid will always be successful.
+    unsafe { libc::geteuid() }
+}
+
+#[no_panic]
+pub fn running_as_sudo() -> bool {
+    effective_user_id() == 0
+} 
 
 #[no_panic]
 pub fn page_size() -> Result<i64> {
@@ -26,9 +39,7 @@ pub fn get_username() -> Option<String> {
     let mut result = ptr::null_mut();
     let mut passwd: passwd = unsafe { mem::zeroed() };
 
-    // Gets the effective user ID of the calling process
-    // Safety: the POSIX Programmer's Manual states this function shouldn't fail here
-    let uid = unsafe { geteuid() };
+    let uid = effective_user_id();
 
     let getpwuid_r_code = unsafe { 
         getpwuid_r(uid, &mut passwd, buf.as_mut_ptr(), buf.len(), &mut result)
