@@ -12,11 +12,18 @@ checksum = "5988cb1d626264ac94100be357308f29ff7cbdd3b36bda27f450a4ee3f713426"
 name = "bustd"
 version = "0.1.0"
 dependencies = [
+ "cc",
  "cfg-if",
  "daemonize",
  "libc",
  "no-panic",
 ]
+
+[[package]]
+name = "cc"
+version = "1.0.68"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4a72c244c1ff497a746a7e1fb3d14bd08420ecda70c8f25c7112f2781652d787"
 
 [[package]]
 name = "cfg-if"

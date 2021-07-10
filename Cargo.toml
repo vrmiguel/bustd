@@ -14,6 +14,9 @@ cfg-if    = "1.0.0"
 daemonize = "0.4.1"
 no-panic  = "0.1.15"
 
+[build-dependencies]
+cc   = "1.0.68"
+libc = "0.2.97"
 
 # Optimize debug in order to 
 # run [no_panic] 

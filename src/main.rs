@@ -1,5 +1,9 @@
+// use uname::Uname;
+
+use uname::Uname;
+
 use crate::{
-    memory::{lock_memory_pages, MemoryInfo},
+    memory::{lock_memory_pages},
     monitor::Monitor,
 };
 
@@ -15,9 +19,13 @@ mod uname;
 mod utils;
 
 fn main() -> error::Result<()> {
-    //     let uname_data = uname::UnameData::gather()?;
-    //     let version = uname_data.version();
-    //     dbg!(&version);
+    // Uname::linux_version will print some info. about the running
+    // kernel and return the Linux version running
+    let linux_version = {
+        let uname = Uname::new()?;
+        let _ = uname.print_info();
+        uname.parse_version().ok()
+    };
 
     // In order to correctly use `mlockall`, we'll try our best to avoid heap allocations and
     // reuse these buffers right here, even though it makes the code less readable.
