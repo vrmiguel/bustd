@@ -6,8 +6,14 @@ use no_panic::no_panic;
 use crate::errno::errno;
 use crate::error::{Error, Result};
 
+
+
 extern "C" {
     fn _mcl_onfault() -> c_int;
+}
+
+extern {
+    pub static _MCL_ONFAULT: libc::c_int;
 }
 
 #[no_panic]
@@ -42,8 +48,11 @@ pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
 }
 
 pub fn lock_memory_pages() -> Result<()> {
-    // TODO: check if the Linux release the user is running has MCL_ONFAULT support
-    match _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE | mcl_onfault()) {
+    // TODO: check for _MCL_ONFAULT == -1
+    
+    #[allow(non_snake_case)]
+    let MCL_ONFAULT: c_int = unsafe { _MCL_ONFAULT };
+    match _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT) {
         Err(err) => {
             eprintln!("First try at mlockall failed: {:?}", err);
         }

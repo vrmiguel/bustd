@@ -1,5 +1,7 @@
 #include <sys/mman.h>
 
-int _mcl_onfault() {
-    return MCL_ONFAULT;
-}
+#ifdef MCL_ONFAULT
+const int _MCL_ONFAULT = MCL_ONFAULT;
+#else
+const int _MCL_ONFAULT = -1;
+#endif
