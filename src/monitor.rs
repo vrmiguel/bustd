@@ -114,6 +114,7 @@ impl Monitor {
     }
 
     // Use the never type here whenever it reaches stable
+    #[allow(unreachable_code)]
     pub fn poll(&mut self) -> Result<()> {
         loop {
             // Update our memory readings

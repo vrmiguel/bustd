@@ -3,8 +3,9 @@ use std::time::Duration;
 use std::{ffi::OsStr, time::Instant};
 
 use libc::kill;
-use libc::{SIGKILL, SIGTERM};
+use libc::{SIGKILL, SIGTERM, EINVAL, EPERM, ESRCH};
 
+use crate::errno::errno;
 use crate::error::{Error, Result};
 use crate::process::Process;
 
@@ -85,7 +86,20 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
 
 pub fn kill_process(process: &Process, signal: i32) -> Result<()> {
     let res = unsafe { kill(process.pid as i32, signal) };
-    // TODO: check for res
+    
+    if res == -1 {
+        Err(match errno() {
+            // An invalid signal was specified
+            EINVAL => Error::InvalidSignal,
+            // Calling process doesn't have permission to send signals to any
+            // of the target processes
+            EPERM => Error::PermissionError,
+            // The  target process or process group does not exist.
+            ESRCH => Error::NoProcessToKillError,
+            _ => Error::UnknownKillError
+        })?
+    }
+
     Ok(())
 }
 

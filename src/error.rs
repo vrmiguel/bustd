@@ -7,6 +7,8 @@ pub enum Error {
     // Only possible uname error: "buf is invalid"
     UnameError,
     ProcessNotFoundError,
+    NoProcessToKillError,
+    InvalidSignal,
     IoError {
         reason: String,
     },
@@ -25,6 +27,7 @@ pub enum Error {
     InvalidFlagsError,
     // Should not happen but better safe than sorry
     UnknownMlockallError,
+    UnknownKillError,
     ThreadError {
         error: Box<dyn Any + Send + 'static>,
     },
@@ -36,7 +39,6 @@ pub enum Error {
     StringFromBytesError,
     ParseIntError,
     ParseFloatError,
-    NoProcessToKillError,
     SysconfFailedError,
     SysInfoFailedError,
 }
