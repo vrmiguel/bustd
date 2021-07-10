@@ -25,7 +25,9 @@ pub enum Error {
     InvalidFlagsError,
     // Should not happen but better safe than sorry
     UnknownMlockallError,
-    ThreadError { error: Box<dyn Any + Send + 'static> },
+    ThreadError {
+        error: Box<dyn Any + Send + 'static>,
+    },
 
     // Errors that are likely impossible to happen
     InvalidLinuxVersionError,

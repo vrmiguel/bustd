@@ -5,7 +5,6 @@ use daemonize::Daemonize;
 use crate::{error::Result, utils};
 
 pub fn daemonize() -> Result<()> {
-
     let running_as_sudo = utils::running_as_sudo();
 
     let username = if running_as_sudo {
@@ -19,13 +18,17 @@ pub fn daemonize() -> Result<()> {
         .create(true)
         .write(true)
         .to_owned();
-    
+
     let (stdout_path, stderr_path, pidfile_path) = if running_as_sudo {
-        ("/var/log/bustd.out", "/var/log/bustd.err", "/var/run/bustd.pid")
+        (
+            "/var/log/bustd.out",
+            "/var/log/bustd.err",
+            "/var/run/bustd.pid",
+        )
     } else {
         ("/tmp/bustd.out", "/tmp/bustd.err", "/tmp/bustd.pid")
     };
-    
+
     let stdout = open_opts.open(stdout_path)?;
     let stderr = open_opts.open(stderr_path)?;
 
@@ -39,7 +42,10 @@ pub fn daemonize() -> Result<()> {
 
     daemonize.start()?;
 
-    println!("[LOG] User {} has started the daemon successfully.", username);
+    println!(
+        "[LOG] User {} has started the daemon successfully.",
+        username
+    );
 
     Ok(())
 }

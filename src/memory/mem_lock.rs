@@ -6,7 +6,9 @@ use no_panic::no_panic;
 use crate::errno::errno;
 use crate::error::{Error, Result};
 
-extern { fn _mcl_onfault() -> c_int; }
+extern "C" {
+    fn _mcl_onfault() -> c_int;
+}
 
 #[no_panic]
 fn mcl_onfault() -> c_int {
@@ -40,12 +42,12 @@ pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
 }
 
 pub fn lock_memory_pages() -> Result<()> {
-    // TODO: check if the Linux release the user is running has MCL_ONFAULT support 
+    // TODO: check if the Linux release the user is running has MCL_ONFAULT support
     match _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE | mcl_onfault()) {
         Err(err) => {
             eprintln!("First try at mlockall failed: {:?}", err);
-        },
-        Ok(_) => return Ok(())
+        }
+        Ok(_) => return Ok(()),
     }
 
     _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE)

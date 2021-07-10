@@ -2,14 +2,16 @@ use std::ffi::CStr;
 // use no_panic::no_panic;
 use std::mem;
 
-use libc::{uname, utsname, c_int};
 use crate::error::{Error, Result};
 use crate::linux_version::LinuxVersion;
 use crate::utils::str_from_u8;
+use libc::{c_int, uname, utsname};
 
 use no_panic::no_panic;
 
-extern { fn _char_is_signed() -> c_int; }
+extern "C" {
+    fn _char_is_signed() -> c_int;
+}
 
 #[no_panic]
 fn char_is_signed() -> bool {
@@ -17,10 +19,11 @@ fn char_is_signed() -> bool {
 }
 
 pub struct Uname {
-    uts_struct: utsname
+    uts_struct: utsname,
 }
 
 impl Uname {
+    #[no_panic]
     pub fn new() -> Result<Self> {
         let mut uts_struct: utsname = unsafe { mem::zeroed() };
 
@@ -30,17 +33,13 @@ impl Uname {
             return Err(Error::UnameError);
         }
 
-        Ok(
-            Self {
-                uts_struct
-            }
-        )
+        Ok(Self { uts_struct })
     }
 
     pub fn print_info(&self) -> Result<()> {
         // Safety: dereference of these raw pointers are safe since we know they're not NULL, since
         // the buffers in struct utsname are all correctly allocated in the stack at this moment
-        
+
         let sysname = unsafe { CStr::from_ptr(self.uts_struct.sysname.as_ptr()) };
         let hostname = unsafe { CStr::from_ptr(self.uts_struct.nodename.as_ptr()) };
         let release = unsafe { CStr::from_ptr(self.uts_struct.release.as_ptr()) };
@@ -62,7 +61,7 @@ impl Uname {
     pub fn parse_version(&self) -> Result<LinuxVersion> {
         let release = unsafe { CStr::from_ptr(self.uts_struct.release.as_ptr()) };
         let release = str_from_u8(release.to_bytes())?;
-        
+
         // The position of the first dot in the 'release' string
         let dot_idx = match release.find('.') {
             Some(idx) => idx,

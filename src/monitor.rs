@@ -51,7 +51,7 @@ impl Monitor {
         let swap_headroom_kib = i64::max(swap_headroom_kib as i64, 0);
 
         let time_to_sleep = ram_headroom_kib / RAM_FILL_RATE + swap_headroom_kib / SWAP_FILL_RATE;
-        // let time_to_sleep = i64::min(time_to_sleep, MAX_SLEEP);
+        let time_to_sleep = i64::min(time_to_sleep, MAX_SLEEP);
         let time_to_sleep = i64::max(time_to_sleep, MIN_SLEEP);
 
         Duration::from_millis(time_to_sleep as u64)
@@ -90,7 +90,7 @@ impl Monitor {
         self.memory_info = memory::MemoryInfo::new()?;
         self.status = if self.memory_info.available_ram_percent <= 15 {
             let psi = memory::pressure::pressure_some_avg10(&mut self.buf)?;
-            eprintln!("Near terminal! PSI: {}", psi);
+            // eprintln!("Near terminal! PSI: {}", psi);
             MemoryStatus::NearTerminal(psi)
         } else {
             MemoryStatus::Okay
@@ -121,9 +121,10 @@ impl Monitor {
             if self.memory_is_low() {
                 self.free_up_memory()?;
             }
-            // Adaptive sleep time
+
+            // Calculating the adaptive sleep time
             let sleep_time = self.sleep_time_ms();
-            // eprintln!("Sleeping {}ms", sleep_time.as_millis());
+            eprintln!("Sleeping {}ms", sleep_time.as_millis());
 
             std::thread::sleep(sleep_time);
         }

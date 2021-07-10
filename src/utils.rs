@@ -19,7 +19,7 @@ fn effective_user_id() -> u32 {
 #[no_panic]
 pub fn running_as_sudo() -> bool {
     effective_user_id() == 0
-} 
+}
 
 #[no_panic]
 pub fn page_size() -> Result<i64> {
@@ -41,9 +41,8 @@ pub fn get_username() -> Option<String> {
 
     let uid = effective_user_id();
 
-    let getpwuid_r_code = unsafe { 
-        getpwuid_r(uid, &mut passwd, buf.as_mut_ptr(), buf.len(), &mut result)
-    };
+    let getpwuid_r_code =
+        unsafe { getpwuid_r(uid, &mut passwd, buf.as_mut_ptr(), buf.len(), &mut result) };
 
     if getpwuid_r_code == 0 && !result.is_null() {
         // If getpwuid_r succeeded, let's get the username from it
@@ -60,8 +59,10 @@ pub fn get_username() -> Option<String> {
 pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
 
-    let bytes = buf.get(0..first_nul_idx).ok_or(Error::StringFromBytesError)?;
-    
+    let bytes = buf
+        .get(0..first_nul_idx)
+        .ok_or(Error::StringFromBytesError)?;
+
     Ok(str::from_utf8(bytes)?)
 }
 
