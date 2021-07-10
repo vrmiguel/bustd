@@ -13,6 +13,7 @@ libc      = "0.2.97"
 cfg-if    = "1.0.0"
 daemonize = "0.4.1"
 no-panic  = "0.1.15"
+argh      = "0.1.5"
 
 [build-dependencies]
 cc   = "1.0.68"

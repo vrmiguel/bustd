@@ -4,6 +4,7 @@ use uname::Uname;
 
 use crate::{memory::lock_memory_pages, monitor::Monitor};
 
+mod cli;
 mod daemon;
 mod errno;
 mod error;
@@ -16,6 +17,10 @@ mod uname;
 mod utils;
 
 fn main() -> error::Result<()> {
+
+    let args: cli::CommandLineArgs = argh::from_env();
+    
+
     // Show uname info and return the Linux version running
     let _linux_version = {
         let uname = Uname::new()?;
