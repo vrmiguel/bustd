@@ -20,11 +20,11 @@ fn main() -> error::Result<()> {
 
     let args: cli::CommandLineArgs = argh::from_env();
     
-
     // Show uname info and return the Linux version running
     let _linux_version = {
         let uname = Uname::new()?;
         let _ = uname.print_info();
+        // TODO: check if Linux version is updated enough
         uname.parse_version().ok()
     };
 
@@ -36,8 +36,10 @@ fn main() -> error::Result<()> {
     // Buffer for anything else
     let buf = [0_u8; 100];
 
-    // Daemonize current process
-    daemon::daemonize()?;
+    if !args.no_daemon {
+        // Daemonize current process
+        daemon::daemonize()?;
+    }
 
     // Attempt to lock the memory pages mapped to the daemon
     // in order to avoid being sent to swap when the system
