@@ -4,7 +4,7 @@
 
 ## Features
 
-### Insignificant memory usage!
+* Small memory usage!
 
 `bustd` seems to use less memory than some other lean daemons such as `earlyoom`:
 
@@ -23,7 +23,7 @@ vrmiguel   42705    2351  0   597   680   3 jul08 pts/1    00:00:00 /home/vrmigu
 `bustd` compiled with musl libc and earlyoom with glibc through GCC 11.1. Different configurations might change these figures.
 
 
-### Also quite insignificant CPU usage
+* Small CPU usage
 
 Much like `earlyoom` and `nohang`, `bustd` uses adaptive sleep times during its memory polling. Unlike these two, however, `bustd` does not read from `/proc/meminfo`, instead opting for the `sysinfo` syscall.
 
@@ -33,11 +33,11 @@ The `sysinfo` syscall is one order of magnitude faster, at least according to [t
 
 As `bustd` can't solely rely on the free RAM readings of `sysinfo`, we check for memory stress through [Pressure Stall Information](https://www.kernel.org/doc/html/v5.8/accounting/psi.html).
 
-### `bustd` locks all pages mapped into its address space
+* `bustd` locks all pages mapped into its address space
 
 Much like `earlyoom`, `bustd` uses [`mlockall`](https://www.ibm.com/docs/en/aix/7.2?topic=m-mlockall-munlockall-subroutine) to avoid being sent to swap, which allows the daemon to remain responsive even when the system memory is under heavy load and susceptible to [thrashing](https://en.wikipedia.org/wiki/Thrashing_(computer_science)).
 
-### Checks for Pressure Stall Information
+* Checks for Pressure Stall Information
 
 The Linux kernel, since version 4.20 (and built with `CONFIG_PSI=y`), presents canonical new pressure metrics for memory, CPU, and IO.
 In the words of [Facebook Incubator](https://facebookmicrosites.github.io/psi/docs/overview):
@@ -50,12 +50,27 @@ when resources start becoming scarce.
 
 More specifically, `bustd` checks for how long, in microseconds, processes have stalled in the last 10 seconds. By default, `bustd` will kill a process when processes have stalled for 25 microseconds in the last ten seconds.
 
+## Building
+
+Requirements:
+* [Rust toolchain](https://rustup.rs/)
+* Any C compiler
+* Linux 4.20+ built with `CONFIG_PSI=y`
+
+```shell
+git clone https://github.com/vrmiguel/bustd
+cd bustd && cargo run --release
+```
+
+The `-n, --no-daemon` flag is useful for running `bustd` through an init system such as `systemd`.
+
+## Prebuilt binaries
+
+Binaries are generated at every commit through [GitHub Actions](https://github.com/vrmiguel/bustd/actions)
 
 ## TODO
 
-`bustd` is still in its infancy
-
-- [ ] Allow for customization of the critical scenario
+- [ ] Allow for customization of the critical scenario (PSI cutoff)
 - [ ] Command-line argument for disabling daemonization (useful for runnning `bustd` as a systemd service)
 - [ ] Command-line argument to enable killing the entire process group, not just the chosen process itself
 - [ ] Notification sending and general notification customization settings
