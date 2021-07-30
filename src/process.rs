@@ -93,30 +93,6 @@ impl Process {
         Ok(vm_rss_kib)
     }
 
-    // pub fn vm_rss_kib(&self) -> Result<i64> {
-    //     let path = format!("/proc/{}/statm", self.pid);
-    //     let contents = read_to_string(path)?;
-    //     let mut columns = contents.split_ascii_whitespace();
-    //     let vm_rss = columns
-    //         .nth(1)
-    //         .ok_or(Error::MalformedStatmError)?
-    //         .parse::<i64>()?;
-
-    //     let page_size = utils::page_size()?;
-
-    //     // Converting VM RSS to KiB
-    //     let vm_rss_kib = vm_rss * page_size / 1024;
-    //     Ok(vm_rss_kib)
-    // }
-
-    // pub fn oom_score_adj(&self) -> Option<i16> {
-    //     let path = format!("/proc/{}/oom_score_adj", self.pid);
-    //     match read_to_string(path) {
-    //         Ok(score) => score.trim().parse().ok(),
-    //         Err(_) => None,
-    //     }
-    // }
-
     pub fn oom_score_adj(&self, mut buf: &mut [u8]) -> Result<i16> {
         write!(&mut buf[..], "/proc/{}/oom_score_adj\0", self.pid)?;
         let contents = {

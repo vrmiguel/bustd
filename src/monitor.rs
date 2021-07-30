@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::cli::CommandLineArgs;
 use crate::error::Result;
 use crate::kill;
 use crate::memory;
@@ -16,6 +17,7 @@ pub struct Monitor {
     proc_buf: [u8; 50],
     buf: [u8; 100],
     status: MemoryStatus,
+    args: CommandLineArgs,
 }
 
 impl Monitor {
@@ -57,7 +59,7 @@ impl Monitor {
         Duration::from_millis(time_to_sleep as u64)
     }
 
-    pub fn new(proc_buf: [u8; 50], mut buf: [u8; 100]) -> Result<Self> {
+    pub fn new(proc_buf: [u8; 50], mut buf: [u8; 100], args: CommandLineArgs) -> Result<Self> {
         let memory_info = MemoryInfo::new()?;
         let status = if memory_info.available_ram_percent <= 15 {
             MemoryStatus::NearTerminal(memory::pressure::pressure_some_avg10(&mut buf)?)
@@ -70,16 +72,13 @@ impl Monitor {
             proc_buf,
             buf,
             status,
+            args,
         })
     }
 
     fn memory_is_low(&self) -> bool {
-        // TODO: doing this just for testing.
-        // Must account for swap later on and
-        // allow the terminal percentage to be
-        // modified by command-line arg. and/or config. file
-
-        matches!(self.status, MemoryStatus::NearTerminal(psi) if psi >= 25.0)
+        let terminal_psi = self.args.cutoff_psi;
+        matches!(self.status, MemoryStatus::NearTerminal(psi) if psi >= terminal_psi)
     }
 
     fn get_victim(&mut self) -> Result<Process> {

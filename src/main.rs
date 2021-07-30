@@ -17,9 +17,8 @@ mod uname;
 mod utils;
 
 fn main() -> error::Result<()> {
-
     let args: cli::CommandLineArgs = argh::from_env();
-    
+
     // Show uname info and return the Linux version running
     let _linux_version = {
         let uname = Uname::new()?;
@@ -52,5 +51,5 @@ fn main() -> error::Result<()> {
         eprintln!("Memory pages locked!");
     }
 
-    Monitor::new(proc_buf, buf)?.poll()
+    Monitor::new(proc_buf, buf, args)?.poll()
 }
