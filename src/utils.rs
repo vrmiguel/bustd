@@ -56,7 +56,7 @@ pub fn get_username() -> Option<String> {
     None
 }
 
-#[no_panic]
+// #[no_panic]
 pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
 

@@ -19,8 +19,14 @@ argh      = "0.1.5"
 cc   = "1.0.68"
 libc = "0.2.97"
 
+[dev-dependencies]
+# Using a somewhat popular crate, `procfs`, to test our own
+# implementation of proc-fs reads.
+# Probably not the best decision possible but OK for now
+procfs = "0.9.1"
+
 # Optimize debug in order to 
-# run [no_panic] 
+# run [no_panic]
 [profile.dev]
 opt-level = 3
 
