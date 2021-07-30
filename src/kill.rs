@@ -74,10 +74,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
     println!(
         "[LOG] Victim => pid: {}, comm: {}, oom_score: {}",
         victim.pid,
-        victim
-            .comm(&mut buf)
-            .unwrap_or_else(|_| "unknown".into())
-            .trim(),
+        victim.comm(&mut buf).unwrap_or_else(|_| "unknown").trim(),
         victim.oom_score
     );
 

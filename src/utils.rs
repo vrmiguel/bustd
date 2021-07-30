@@ -28,6 +28,7 @@ pub fn page_size() -> Result<i64> {
         return Err(Error::SysconfFailedError);
     }
 
+    #[allow(clippy::useless_conversion)]
     // The type of page_size differs between architectures
     // so we use .into() to convert to i64 if necessary
     Ok(page_size.into())
@@ -73,7 +74,7 @@ pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
 // }
 
 pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
-    let path = str_from_u8(&buf)?;
+    let path = str_from_u8(buf)?;
     let file = File::open(&path)?;
     Ok(file)
 }

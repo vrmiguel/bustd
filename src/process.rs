@@ -45,7 +45,7 @@ impl Process {
     }
 
     pub fn comm<'a>(&self, mut buf: &'a mut [u8]) -> Result<&'a str> {
-        write!(&mut buf[..], "/proc/{}/comm\0", self.pid)?;
+        write!(&mut *buf, "/proc/{}/comm\0", self.pid)?;
         {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
@@ -56,7 +56,7 @@ impl Process {
     }
 
     pub fn oom_score_from_pid(pid: u32, mut buf: &mut [u8]) -> Result<i16> {
-        write!(&mut buf[..], "/proc/{}/oom_score\0", pid)?;
+        write!(&mut *buf, "/proc/{}/oom_score\0", pid)?;
         let contents = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
@@ -73,7 +73,7 @@ impl Process {
     /// multiply the number of pages in `statm` by the page size of our system and then convert
     /// that value to KiB
     pub fn vm_rss_kib(&self, mut buf: &mut [u8]) -> Result<i64> {
-        write!(&mut buf[..], "/proc/{}/statm\0", self.pid)?;
+        write!(&mut *buf, "/proc/{}/statm\0", self.pid)?;
         let mut columns = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
@@ -94,7 +94,7 @@ impl Process {
     }
 
     pub fn oom_score_adj(&self, mut buf: &mut [u8]) -> Result<i16> {
-        write!(&mut buf[..], "/proc/{}/oom_score_adj\0", self.pid)?;
+        write!(&mut *buf, "/proc/{}/oom_score_adj\0", self.pid)?;
         let contents = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
