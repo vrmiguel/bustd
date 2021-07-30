@@ -89,7 +89,6 @@ impl Monitor {
         self.memory_info = memory::MemoryInfo::new()?;
         self.status = if self.memory_info.available_ram_percent <= 15 {
             let psi = memory::pressure::pressure_some_avg10(&mut self.buf)?;
-            // eprintln!("Near terminal! PSI: {}", psi);
             MemoryStatus::NearTerminal(psi)
         } else {
             MemoryStatus::Okay
