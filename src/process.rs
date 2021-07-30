@@ -112,34 +112,38 @@ mod tests {
     // We'll use the Process struct from procfs
     // in order to test our own Process struct.
     //
-    // The reason we don't use `procfs` directly is 
+    // The reason we don't use `procfs` directly is
     // because our implementation is considerably leaner.
     use procfs;
 
-    fn buf() -> [u8; 100] {
-        [0_u8; 100]
-    }
-
     // Returns the Process representing the
     // process of the caller test
-    fn this(mut buf: &mut [u8]) -> crate::process::Process {
-        crate::process::Process::this(&mut buf).unwrap()
+    fn this() -> ([u8; 100], crate::process::Process) {
+        let mut buf = [0_u8; 100];
+        (buf, crate::process::Process::this(&mut buf).unwrap())
     }
 
     #[test]
     fn comm() {
-        let mut buf = buf();
-        let this = this(&mut buf);
+        
+        let (mut buf, this) = this();
         let comm = this.comm(&mut buf).unwrap();
 
-        // We'll now represent the current process using 
-        // the external `procfs` crate as well  
+        // We'll now represent the current process using
+        // the external `procfs` crate as well
         let _this = procfs::process::Process::myself().unwrap();
         let _comm = _this.stat.comm;
 
-        assert_eq!(
-            comm.trim(),
-            _comm
-        )
+        assert_eq!(comm.trim(), _comm)
+    }
+
+    #[test]
+    fn pid() {
+        // let mut buf = buf();
+        let (_, this) = this();
+
+        let _this = procfs::process::Process::myself().unwrap();
+
+        assert_eq!(this.pid as i32, _this.pid);
     }
 }
