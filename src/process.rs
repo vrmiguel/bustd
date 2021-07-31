@@ -17,7 +17,7 @@ pub struct Process {
 impl Process {
     pub fn from_pid(pid: u32, mut buf: &mut [u8]) -> Result<Self> {
         let oom_score =
-            Self::oom_score_from_pid(pid, &mut buf).or(Err(Error::ProcessNotFoundError))?;
+            Self::oom_score_from_pid(pid, &mut buf).or(Err(Error::ProcessNotFound("from_pid")))?;
         Ok(Self { pid, oom_score })
     }
 

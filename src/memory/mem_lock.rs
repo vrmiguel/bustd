@@ -30,7 +30,7 @@ pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
         // that the process may lock.
         ENOMEM => Error::TooMuchMemoryToLockError,
         // The calling process does not have appropriate privileges to perform the requested operation
-        EPERM => Error::PermissionError,
+        EPERM => Error::NoPermission,
         // Should not happen
         _ => Error::UnknownMlockallError,
     })

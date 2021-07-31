@@ -8,6 +8,7 @@ use libc::{EINVAL, EPERM, ESRCH, SIGKILL, SIGTERM};
 use crate::errno::errno;
 use crate::error::{Error, Result};
 use crate::process::Process;
+use crate::utils;
 
 pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Process> {
     let now = Instant::now();
@@ -32,7 +33,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
     let first_process = processes.next();
     if first_process.is_none() {
         // Likely an impossible scenario but we found no process to kill!
-        return Err(Error::NoProcessToKillError);
+        return Err(Error::ProcessNotFound("choose_victim"));
     }
 
     let mut victim = first_process.unwrap();
@@ -81,8 +82,8 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
     Ok(victim)
 }
 
-pub fn kill_process(process: &Process, signal: i32) -> Result<()> {
-    let res = unsafe { kill(process.pid as i32, signal) };
+pub fn kill_process(pid: i32, signal: i32) -> Result<()> { 
+    let res = unsafe { kill(pid, signal) };
 
     if res == -1 {
         Err(match errno() {
@@ -90,12 +91,23 @@ pub fn kill_process(process: &Process, signal: i32) -> Result<()> {
             EINVAL => Error::InvalidSignal,
             // Calling process doesn't have permission to send signals to any
             // of the target processes
-            EPERM => Error::PermissionError,
-            // The  target process or process group does not exist.
-            ESRCH => Error::NoProcessToKillError,
+            EPERM => Error::NoPermission,
+            // The target process or process group does not exist.
+            ESRCH => Error::ProcessNotFound("kill"),
             _ => Error::UnknownKillError,
         })?
     }
+
+    Ok(())
+}
+
+pub fn kill_process_group(process: Process) -> Result<()> {
+    let pid = process.pid;
+
+    let pgid = utils::get_process_group(pid as i32)?;
+
+    // TODO: kill and wait
+    let _ = kill_process(-pgid, SIGTERM);
 
     Ok(())
 }
@@ -107,7 +119,7 @@ pub fn kill_and_wait(process: Process) -> Result<bool> {
     let pid = process.pid;
     let now = Instant::now();
 
-    let _ = kill_process(&process, SIGTERM);
+    let _ = kill_process(pid as i32, SIGTERM);
 
     let half_a_sec = Duration::from_secs_f32(0.5);
     let mut sigkill_sent = false;
@@ -119,7 +131,7 @@ pub fn kill_and_wait(process: Process) -> Result<bool> {
             return Ok(true);
         }
         if !sigkill_sent {
-            let _ = kill_process(&process, SIGKILL);
+            let _ = kill_process(pid as i32, SIGKILL);
             sigkill_sent = true;
             println!(
                 "[LOG] Escalated to SIGKILL after {} nanosecs",

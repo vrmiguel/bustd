@@ -5,20 +5,21 @@ use daemonize::DaemonizeError;
 #[derive(Debug)]
 pub enum Error {
     // Only possible uname error: "buf is invalid"
-    UnameError,
-    ProcessNotFoundError,
-    NoProcessToKillError,
+    UnameFailed,
+    ProcessNotFound(&'static str),
+    InvalidPidSupplied,
+    ProcessGroupNotFound,
     InvalidSignal,
-    IoError {
+    Io {
         reason: String,
     },
-    DaemonizeError {
+    Daemonize {
         error: DaemonizeError,
     },
-    UnicodeError {
+    Unicode {
         error: Utf8Error,
     },
-    PermissionError,
+    NoPermission,
 
     // mlockall-specific errors
     ///
@@ -28,6 +29,7 @@ pub enum Error {
     // Should not happen but better safe than sorry
     UnknownMlockallError,
     UnknownKillError,
+    UnknownGetpguidError,
     ThreadError {
         error: Box<dyn Any + Send + 'static>,
     },
@@ -47,7 +49,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
-        Self::IoError {
+        Self::Io {
             reason: err.to_string(),
         }
     }
@@ -67,13 +69,13 @@ impl From<std::num::ParseFloatError> for Error {
 
 impl From<DaemonizeError> for Error {
     fn from(error: DaemonizeError) -> Self {
-        Self::DaemonizeError { error }
+        Self::Daemonize { error }
     }
 }
 
 impl From<std::str::Utf8Error> for Error {
     fn from(error: std::str::Utf8Error) -> Self {
-        Self::UnicodeError { error }
+        Self::Unicode { error }
     }
 }
 

@@ -30,7 +30,7 @@ impl Uname {
         let ret_val = unsafe { uname(&mut uts_struct) };
         // uname returns a negative number upon failure
         if ret_val < 0 {
-            return Err(Error::UnameError);
+            return Err(Error::UnameFailed);
         }
 
         Ok(Self { uts_struct })
