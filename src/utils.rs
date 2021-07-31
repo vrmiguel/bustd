@@ -67,12 +67,6 @@ pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     Ok(str::from_utf8(bytes)?)
 }
 
-// pub fn file_from_buffer(buf: [u8; 50]) -> Result<([u8; 50], File)> {
-//     let path = str_from_u8(&buf)?;
-//     let mut file = File::open(&path)?;
-//     Ok((buf, file))
-// }
-
 pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
     let path = str_from_u8(buf)?;
     let file = File::open(&path)?;

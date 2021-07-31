@@ -70,8 +70,8 @@ Binaries are generated at every commit through [GitHub Actions](https://github.c
 
 ## TODO
 
-- [ ] Allow for customization of the critical scenario (PSI cutoff)
-- [ ] Command-line argument for disabling daemonization (useful for runnning `bustd` as a systemd service)
+- [x] Allow for customization of the critical scenario (PSI cutoff)
+- [x] Command-line argument for disabling daemonization (useful for runnning `bustd` as a systemd service)
 - [ ] Command-line argument to enable killing the entire process group, not just the chosen process itself
 - [ ] Notification sending and general notification customization settings
 - [ ] Allow the user to setup a list of software that `bustd` should never kill
