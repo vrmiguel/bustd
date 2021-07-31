@@ -125,7 +125,6 @@ mod tests {
 
     #[test]
     fn comm() {
-        
         let (mut buf, this) = this();
         let comm = this.comm(&mut buf).unwrap();
 
@@ -138,8 +137,16 @@ mod tests {
     }
 
     #[test]
+    fn oom_score() {
+        let (_, this) = this();
+
+        let _this = procfs::process::Process::myself().unwrap();
+
+        assert_eq!(this.oom_score, _this.oom_score().unwrap() as i16);
+    }
+
+    #[test]
     fn pid() {
-        // let mut buf = buf();
         let (_, this) = this();
 
         let _this = procfs::process::Process::myself().unwrap();
