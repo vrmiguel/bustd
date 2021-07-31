@@ -49,7 +49,7 @@ impl Process {
         {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            file.read(&mut buf)?;
+            let _ = file.read(&mut buf)?;
         }
 
         str_from_u8(buf)
@@ -60,7 +60,7 @@ impl Process {
         let contents = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            file.read(&mut buf)?;
+            let _ = file.read(&mut buf)?;
 
             str_from_u8(buf)?.trim()
         };
@@ -77,7 +77,7 @@ impl Process {
         let mut columns = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            file.read(&mut buf)?;
+            let _ = file.read(&mut buf)?;
 
             str_from_u8(buf)?.split_ascii_whitespace()
         };
@@ -98,7 +98,7 @@ impl Process {
         let contents = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            file.read(&mut buf)?;
+            let _ = file.read(&mut buf)?;
 
             str_from_u8(buf)?.trim()
         };
