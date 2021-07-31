@@ -127,7 +127,9 @@ impl Monitor {
 
             // Calculating the adaptive sleep time
             let sleep_time = self.sleep_time_ms();
-            eprintln!("Sleeping {}ms", sleep_time.as_millis());
+            if self.args.verbose {
+                eprintln!("[adaptive-sleep] {}ms", sleep_time.as_millis());
+            }
 
             std::thread::sleep(sleep_time);
         }

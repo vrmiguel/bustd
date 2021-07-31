@@ -37,6 +37,7 @@ fn main() -> error::Result<()> {
 
     if !args.no_daemon {
         // Daemonize current process
+        println!("\nStarting daemonization process!");
         daemon::daemonize()?;
     }
 

@@ -5,6 +5,10 @@ use argh::FromArgs;
 #[derive(FromArgs)]
 /// Lightweight process killer daemon for out-of-memory scenarios
 pub struct CommandLineArgs {
+    /// toggles on verbose output
+    #[argh(switch, short = 'V')]
+    pub verbose: bool,
+
     /// when set, bustd will kill the victim's entire process group
     #[argh(switch, short = 'g')]
     pub group: bool,
