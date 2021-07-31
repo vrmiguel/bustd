@@ -24,13 +24,6 @@ jobs:
           use-cross: true
           command: build
           args: --release --target=armv7-unknown-linux-gnueabihf
-
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: test
-          args: --target=armv7-unknown-linux-gnueabihf
           
       - name: Strip binary
         run: arm-none-eabi-strip target/armv7-unknown-linux-gnueabihf/release/bustd
@@ -63,13 +56,6 @@ jobs:
           use-cross: true
           command: build
           args: --release --target=armv7-unknown-linux-musleabihf
-
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          use-cross: true
-          command: test
-          args: --target=armv7-unknown-linux-musleabihf
           
       - name: Strip binary
         run: arm-none-eabi-strip target/armv7-unknown-linux-musleabihf/release/bustd
@@ -112,7 +98,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --target x86_64-unknown-linux-musl
+          args: --release --target x86_64-unknown-linux-musl
 
       - name: Strip binary
         run: strip target/x86_64-unknown-linux-musl/release/bustd
@@ -149,6 +135,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+          args: --release
 
       - name: Strip binary
         run: strip target/release/bustd
