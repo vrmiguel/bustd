@@ -82,7 +82,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
     Ok(victim)
 }
 
-pub fn kill_process(pid: i32, signal: i32) -> Result<()> { 
+pub fn kill_process(pid: i32, signal: i32) -> Result<()> {
     let res = unsafe { kill(pid, signal) };
 
     if res == -1 {

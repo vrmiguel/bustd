@@ -1,8 +1,8 @@
 use std::fs::File;
 use std::{ffi::CStr, mem, ptr, str};
 
-use libc::{getpgid, sysconf, ESRCH, EPERM, EINVAL};
 use libc::_SC_PAGESIZE;
+use libc::{getpgid, sysconf, EINVAL, EPERM, ESRCH};
 use libc::{getpwuid_r, passwd};
 use no_panic::no_panic;
 
@@ -17,7 +17,7 @@ fn effective_user_id() -> u32 {
     unsafe { libc::geteuid() }
 }
 
-/// Gets the process group of the process 
+/// Gets the process group of the process
 /// with the given PID.
 pub fn get_process_group(pid: i32) -> Result<i32> {
     let pgid = unsafe { getpgid(pid) };
@@ -26,7 +26,7 @@ pub fn get_process_group(pid: i32) -> Result<i32> {
             EPERM => Error::NoPermission,
             ESRCH => Error::ProcessGroupNotFound,
             EINVAL => Error::InvalidPidSupplied,
-            _ => Error::UnknownGetpguidError
+            _ => Error::UnknownGetpguidError,
         })?
     }
 

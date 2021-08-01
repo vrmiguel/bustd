@@ -24,4 +24,9 @@ pub struct CommandLineArgs {
     /// sets the PSI value on which, if surpassed, a process will be killed
     #[argh(option, short = 'p', long = "psi", default = "25.0")]
     pub cutoff_psi: f32, // TODO: responsitivity multiplier?
+
+    #[cfg(feature = "glob-ignore")]
+    /// all processes whose names match this glob pattern will never be chosen to be killed.
+    #[argh(option, short = 'i', long = "ignored")]
+    pub ignored: Option<String>,
 }
