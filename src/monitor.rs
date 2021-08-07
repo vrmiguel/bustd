@@ -82,7 +82,7 @@ impl Monitor {
     }
 
     fn get_victim(&mut self) -> Result<Process> {
-        kill::choose_victim(&mut self.proc_buf, &mut self.buf)
+        kill::choose_victim(&mut self.proc_buf, &mut self.buf, &self.args)
     }
 
     fn update_memory_stats(&mut self) -> Result<()> {

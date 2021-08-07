@@ -34,6 +34,11 @@ pub enum Error {
         error: Box<dyn Any + Send + 'static>,
     },
 
+    #[cfg(feature = "glob-ignore")]
+    GlobPattern {
+        error: glob::PatternError
+    },
+
     // Errors that are likely impossible to happen
     InvalidLinuxVersionError,
     MalformedStatmError,
@@ -82,5 +87,12 @@ impl From<std::str::Utf8Error> for Error {
 impl From<Box<dyn Any + Send + 'static>> for Error {
     fn from(error: Box<dyn Any + Send + 'static>) -> Self {
         Self::ThreadError { error }
+    }
+}
+
+#[cfg(feature = "glob-ignore")]
+impl From<glob::PatternError> for Error {
+    fn from(error: glob::PatternError) -> Self {
+        Self::GlobPattern { error }
     }
 }

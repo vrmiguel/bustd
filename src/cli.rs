@@ -1,6 +1,5 @@
-use argh;
 use argh::FromArgs;
-// use argh::;
+use argh;
 
 #[derive(FromArgs)]
 /// Lightweight process killer daemon for out-of-memory scenarios
@@ -26,7 +25,17 @@ pub struct CommandLineArgs {
     pub cutoff_psi: f32, // TODO: responsitivity multiplier?
 
     #[cfg(feature = "glob-ignore")]
-    /// all processes whose names match this glob pattern will never be chosen to be killed.
-    #[argh(option, short = 'i', long = "ignored")]
-    pub ignored: Option<String>,
+    /// all processes whose names match any of the supplied tilde-separated glob patterns will never be chosen to be killed
+    #[argh(
+        option,
+        short = 'u',
+        long = "unkillables",
+        from_str_fn(parse_unkillables)
+    )]
+    pub ignored: Option<Vec<String>>,
+}
+
+#[cfg(feature = "glob-ignore")]
+fn parse_unkillables(arg: &str) -> Result<Vec<String>, String> {
+    Ok(arg.split('~').map(ToOwned::to_owned).collect())
 }
