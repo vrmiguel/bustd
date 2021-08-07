@@ -13,6 +13,10 @@ use crate::{cli, utils};
 pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::CommandLineArgs) -> Result<Process> {
     let now = Instant::now();
 
+    // `args` is currently only used when checking for unkillable patterns
+    #[cfg(not(feature = "glob-ignore"))]
+    let _ = args;
+
     let mut processes = fs::read_dir("/proc/")?
         .into_iter()
         .filter_map(|e| e.ok())
