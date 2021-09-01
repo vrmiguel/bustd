@@ -9,6 +9,7 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+glob = { version = "0.3.0", optional = true }
 libc      = "0.2.97"
 cfg-if    = "1.0.0"
 daemonize = "0.4.1"
@@ -29,6 +30,9 @@ procfs = "0.9.1"
 # run [no_panic]
 [profile.dev]
 opt-level = 3
+
+[features]
+glob-ignore = ["glob"]
 
 [profile.release]
 lto = true

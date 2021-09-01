@@ -8,10 +8,14 @@ use libc::{EINVAL, EPERM, ESRCH, SIGKILL, SIGTERM};
 use crate::errno::errno;
 use crate::error::{Error, Result};
 use crate::process::Process;
-use crate::utils;
+use crate::{cli, utils};
 
-pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Process> {
+pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::CommandLineArgs) -> Result<Process> {
     let now = Instant::now();
+
+    // `args` is currently only used when checking for unkillable patterns
+    #[cfg(not(feature = "glob-ignore"))]
+    let _ = args;
 
     let mut processes = fs::read_dir("/proc/")?
         .into_iter()
@@ -46,6 +50,16 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
             continue;
         }
 
+        #[cfg(feature = "glob-ignore")]
+        {
+            if let Some(patterns) = &args.ignored {
+                if matches!(process.is_unkillable(&mut buf, patterns), Ok(true)) {
+                    continue;
+                }
+            }
+        }
+        
+
         let cur_vm_rss_kib = process.vm_rss_kib(&mut buf)?;
         if cur_vm_rss_kib == 0 {
             // Current process is a kernel thread
@@ -58,6 +72,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
 
         let cur_oom_score_adj = match process.oom_score_adj(&mut buf) {
             Ok(oom_score_adj) => oom_score_adj,
+            // TODO: warn that this error happened
             Err(_) => continue,
         };
 
@@ -82,7 +97,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8]) -> Result<Proc
     Ok(victim)
 }
 
-pub fn kill_process(pid: i32, signal: i32) -> Result<()> { 
+pub fn kill_process(pid: i32, signal: i32) -> Result<()> {
     let res = unsafe { kill(pid, signal) };
 
     if res == -1 {

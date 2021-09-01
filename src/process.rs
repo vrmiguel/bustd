@@ -93,6 +93,25 @@ impl Process {
         Ok(vm_rss_kib)
     }
 
+    #[cfg(feature = "glob-ignore")]
+    /// Checks if the process' name matches any of the given glob patterns
+    pub fn is_unkillable(&self, mut buf: &mut[u8], patterns: &[String]) -> Result<bool> {
+        use glob::Pattern;
+
+        let comm = self.comm(buf)?;
+        for pattern in patterns {
+            let pattern = Pattern::new(pattern)?;
+            if pattern.matches(comm) {
+                println!("Skipping \"{}\" since it matches an unkillable pattern", comm);
+                return Ok(true)
+            }
+        }
+
+        Ok(false)
+    }
+
+
+
     pub fn oom_score_adj(&self, mut buf: &mut [u8]) -> Result<i16> {
         write!(&mut *buf, "/proc/{}/oom_score_adj\0", self.pid)?;
         let contents = {
