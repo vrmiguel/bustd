@@ -13,7 +13,6 @@ glob = { version = "0.3.0", optional = true }
 libc      = "0.2.97"
 cfg-if    = "1.0.0"
 daemonize = "0.4.1"
-no-panic  = "0.1.15"
 argh      = "0.1.5"
 
 [build-dependencies]
@@ -25,11 +24,6 @@ libc = "0.2.97"
 # implementation of proc-fs reads.
 # Probably not the best decision possible but OK for now
 procfs = "0.9.1"
-
-# Optimize debug in order to 
-# run [no_panic]
-[profile.dev]
-opt-level = 3
 
 [features]
 glob-ignore = ["glob"]

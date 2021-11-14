@@ -4,12 +4,10 @@ use std::{ffi::CStr, mem, ptr, str};
 use libc::_SC_PAGESIZE;
 use libc::{getpgid, sysconf, EINVAL, EPERM, ESRCH};
 use libc::{getpwuid_r, passwd};
-use no_panic::no_panic;
 
 use crate::errno::errno;
 use crate::error::{Error, Result};
 
-#[no_panic]
 /// Gets the effective user ID of the calling process
 fn effective_user_id() -> u32 {
     // Safety: the POSIX Programmer's Manual states that
@@ -33,12 +31,10 @@ pub fn get_process_group(pid: i32) -> Result<i32> {
     Ok(pgid)
 }
 
-#[no_panic]
 pub fn running_as_sudo() -> bool {
     effective_user_id() == 0
 }
 
-#[no_panic]
 pub fn page_size() -> Result<i64> {
     let page_size = unsafe { sysconf(_SC_PAGESIZE) };
     if page_size == -1 {
@@ -51,7 +47,6 @@ pub fn page_size() -> Result<i64> {
     Ok(page_size.into())
 }
 
-// #[no_panic]
 pub fn get_username() -> Option<String> {
     let mut buf = [0; 2048];
     let mut result = ptr::null_mut();
@@ -73,7 +68,6 @@ pub fn get_username() -> Option<String> {
     None
 }
 
-// #[no_panic]
 pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
 

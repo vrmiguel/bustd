@@ -1,29 +1,16 @@
 use std::ffi::CStr;
-// use no_panic::no_panic;
 use std::mem;
 
 use crate::error::{Error, Result};
 use crate::linux_version::LinuxVersion;
 use crate::utils::str_from_u8;
-use libc::{c_int, uname, utsname};
-
-use no_panic::no_panic;
-
-extern "C" {
-    fn _char_is_signed() -> c_int;
-}
-
-#[no_panic]
-fn char_is_signed() -> bool {
-    1 == unsafe { _char_is_signed() }
-}
+use libc::{uname, utsname};
 
 pub struct Uname {
     uts_struct: utsname,
 }
 
 impl Uname {
-    #[no_panic]
     pub fn new() -> Result<Self> {
         let mut uts_struct: utsname = unsafe { mem::zeroed() };
 

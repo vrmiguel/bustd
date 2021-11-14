@@ -1,7 +1,6 @@
 use libc::{c_int, mlockall};
 use libc::{EAGAIN, EINVAL, ENOMEM, EPERM};
 use libc::{MCL_CURRENT, MCL_FUTURE};
-use no_panic::no_panic;
 
 use crate::errno::errno;
 use crate::error::{Error, Result};
@@ -10,7 +9,6 @@ extern "C" {
     pub static _MCL_ONFAULT: libc::c_int;
 }
 
-#[no_panic]
 pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
     // Safety: mlockall is safe
     let err = unsafe { mlockall(flags) };
