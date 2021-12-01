@@ -81,3 +81,8 @@ pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
     let file = File::open(&path)?;
     Ok(file)
 }
+
+pub fn bytes_to_megabytes(bytes: impl Into<u64>, mem_unit: impl Into<u64>) -> u64 {
+    const B_TO_MB: u64 = 1000 * 1000;
+    bytes.into() / B_TO_MB * mem_unit.into()
+}

@@ -2,7 +2,10 @@ use std::{fmt, mem};
 
 use libc::sysinfo;
 
-use crate::error::{Error, Result};
+use crate::{
+    error::{Error, Result},
+    utils::bytes_to_megabytes,
+};
 
 #[derive(Debug, Default)]
 pub struct MemoryInfo {
@@ -35,19 +38,21 @@ fn sys_info() -> Result<sysinfo> {
 
 impl MemoryInfo {
     pub fn new() -> Result<MemoryInfo> {
-        let sys_info = sys_info()?;
+        let sysinfo {
+            mem_unit,
+            freeram,
+            totalram,
+            totalswap,
+            freeswap,
+            ..
+        } = sys_info()?;
 
-        let mem_unit = sys_info.mem_unit;
-
-        // Converts bytes into megabytes
-        const B_TO_MB: u64 = 1000 * 1000;
-        let bytes_to_megabytes = |bytes: u64| (bytes / B_TO_MB) * (mem_unit as u64);
         let ratio = |x, y| ((x as f32 / y as f32) * 100.0) as u8;
 
-        let available_ram_mb = bytes_to_megabytes(sys_info.freeram);
-        let total_ram_mb = bytes_to_megabytes(sys_info.totalram);
-        let total_swap_mb = bytes_to_megabytes(sys_info.totalswap);
-        let available_swap_mb = bytes_to_megabytes(sys_info.freeswap);
+        let available_ram_mb = bytes_to_megabytes(freeram, mem_unit);
+        let total_ram_mb = bytes_to_megabytes(totalram, mem_unit);
+        let total_swap_mb = bytes_to_megabytes(totalswap, mem_unit);
+        let available_swap_mb = bytes_to_megabytes(freeswap, mem_unit);
 
         let available_ram_percent = ratio(available_ram_mb, total_ram_mb);
         let available_swap_percent = if total_swap_mb != 0 {

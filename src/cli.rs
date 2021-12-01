@@ -1,4 +1,3 @@
-use argh;
 use argh::FromArgs;
 
 #[derive(FromArgs)]
