@@ -7,10 +7,6 @@ pub struct CommandLineArgs {
     #[argh(switch, short = 'V')]
     pub verbose: bool,
 
-    /// when set, bustd will kill the victim's entire process group
-    #[argh(switch, short = 'g')]
-    pub group: bool,
-
     /// when set, the process will not be daemonized
     #[argh(switch, short = 'n')]
     pub no_daemon: bool,
