@@ -1,5 +1,3 @@
-use cc;
-
 fn main() {
     cc::Build::new().file("cc/helper.c").compile("helper");
 

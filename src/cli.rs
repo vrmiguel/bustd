@@ -1,5 +1,5 @@
-use argh::FromArgs;
 use argh;
+use argh::FromArgs;
 
 #[derive(FromArgs)]
 /// Lightweight process killer daemon for out-of-memory scenarios

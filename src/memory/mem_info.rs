@@ -27,7 +27,7 @@ fn sys_info() -> Result<sysinfo> {
         // it is supplied an invalid struct sysinfo pointer
         //
         // This error should really not happen during this function
-        Err(Error::SysInfoFailedError)?;
+        return Err(Error::SysInfoFailed);
     }
 
     Ok(sys_info)
@@ -44,10 +44,10 @@ impl MemoryInfo {
         let bytes_to_megabytes = |bytes: u64| (bytes / B_TO_MB) * (mem_unit as u64);
         let ratio = |x, y| ((x as f32 / y as f32) * 100.0) as u8;
 
-        let available_ram_mb = bytes_to_megabytes(sys_info.freeram.into());
-        let total_ram_mb = bytes_to_megabytes(sys_info.totalram.into());
-        let total_swap_mb = bytes_to_megabytes(sys_info.totalswap.into());
-        let available_swap_mb = bytes_to_megabytes(sys_info.freeswap.into());
+        let available_ram_mb = bytes_to_megabytes(sys_info.freeram);
+        let total_ram_mb = bytes_to_megabytes(sys_info.totalram);
+        let total_swap_mb = bytes_to_megabytes(sys_info.totalswap);
+        let available_swap_mb = bytes_to_megabytes(sys_info.freeswap);
 
         let available_ram_percent = ratio(available_ram_mb, total_ram_mb);
         let available_swap_percent = if total_swap_mb != 0 {
@@ -68,7 +68,7 @@ impl MemoryInfo {
 }
 
 impl fmt::Display for MemoryInfo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "Total RAM: {} MB", self.total_ram_mb)?;
         writeln!(
             f,
