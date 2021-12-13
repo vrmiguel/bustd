@@ -57,7 +57,7 @@ pub fn choose_victim(
         #[cfg(feature = "glob-ignore")]
         {
             if let Some(patterns) = &args.ignored {
-                if matches!(process.is_unkillable(&mut buf, patterns), Ok(true)) {
+                if matches!(process.is_unkillable(buf, patterns), Ok(true)) {
                     continue;
                 }
             }

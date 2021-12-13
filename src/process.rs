@@ -95,7 +95,7 @@ impl Process {
 
     #[cfg(feature = "glob-ignore")]
     /// Checks if the process' name matches any of the given glob patterns
-    pub fn is_unkillable(&self, mut buf: &mut [u8], patterns: &[String]) -> Result<bool> {
+    pub fn is_unkillable(&self, buf: &mut [u8], patterns: &[String]) -> Result<bool> {
         use glob::Pattern;
 
         let comm = self.comm(buf)?;
