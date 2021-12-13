@@ -15,9 +15,9 @@ pub struct Process {
 }
 
 impl Process {
-    pub fn from_pid(pid: u32, mut buf: &mut [u8]) -> Result<Self> {
+    pub fn from_pid(pid: u32, buf: &mut [u8]) -> Result<Self> {
         let oom_score =
-            Self::oom_score_from_pid(pid, &mut buf).or(Err(Error::ProcessNotFound("from_pid")))?;
+            Self::oom_score_from_pid(pid, buf).or(Err(Error::ProcessNotFound("from_pid")))?;
         Ok(Self { pid, oom_score })
     }
 
@@ -44,23 +44,23 @@ impl Process {
         Self::is_alive_from_pid(self.pid)
     }
 
-    pub fn comm<'a>(&self, mut buf: &'a mut [u8]) -> Result<&'a str> {
+    pub fn comm<'a>(&self, buf: &'a mut [u8]) -> Result<&'a str> {
         write!(&mut *buf, "/proc/{}/comm\0", self.pid)?;
         {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            let _ = file.read(&mut buf)?;
+            let _ = file.read(buf)?;
         }
 
         str_from_u8(buf)
     }
 
-    pub fn oom_score_from_pid(pid: u32, mut buf: &mut [u8]) -> Result<i16> {
+    pub fn oom_score_from_pid(pid: u32, buf: &mut [u8]) -> Result<i16> {
         write!(&mut *buf, "/proc/{}/oom_score\0", pid)?;
         let contents = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            let _ = file.read(&mut buf)?;
+            let _ = file.read(buf)?;
 
             str_from_u8(buf)?.trim()
         };
@@ -72,18 +72,18 @@ impl Process {
     /// In order to match the VmRSS value in /proc/<PID>/status, we'll
     /// multiply the number of pages in `statm` by the page size of our system and then convert
     /// that value to KiB
-    pub fn vm_rss_kib(&self, mut buf: &mut [u8]) -> Result<i64> {
+    pub fn vm_rss_kib(&self, buf: &mut [u8]) -> Result<i64> {
         write!(&mut *buf, "/proc/{}/statm\0", self.pid)?;
         let mut columns = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            let _ = file.read(&mut buf)?;
+            let _ = file.read(buf)?;
 
             str_from_u8(buf)?.split_ascii_whitespace()
         };
         let vm_rss = columns
             .nth(1)
-            .ok_or(Error::MalformedStatmError)?
+            .ok_or(Error::MalformedStatm)?
             .parse::<i64>()?;
 
         let page_size = utils::page_size()?;
@@ -95,29 +95,30 @@ impl Process {
 
     #[cfg(feature = "glob-ignore")]
     /// Checks if the process' name matches any of the given glob patterns
-    pub fn is_unkillable(&self, mut buf: &mut[u8], patterns: &[String]) -> Result<bool> {
+    pub fn is_unkillable(&self, mut buf: &mut [u8], patterns: &[String]) -> Result<bool> {
         use glob::Pattern;
 
         let comm = self.comm(buf)?;
         for pattern in patterns {
             let pattern = Pattern::new(pattern)?;
             if pattern.matches(comm) {
-                println!("Skipping \"{}\" since it matches an unkillable pattern", comm);
-                return Ok(true)
+                println!(
+                    "Skipping \"{}\" since it matches an unkillable pattern",
+                    comm
+                );
+                return Ok(true);
             }
         }
 
         Ok(false)
     }
 
-
-
-    pub fn oom_score_adj(&self, mut buf: &mut [u8]) -> Result<i16> {
+    pub fn oom_score_adj(&self, buf: &mut [u8]) -> Result<i16> {
         write!(&mut *buf, "/proc/{}/oom_score_adj\0", self.pid)?;
         let contents = {
             let mut file = utils::file_from_buffer(buf)?;
             buf.fill(0);
-            let _ = file.read(&mut buf)?;
+            let _ = file.read(buf)?;
 
             str_from_u8(buf)?.trim()
         };

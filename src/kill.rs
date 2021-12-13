@@ -10,7 +10,11 @@ use crate::error::{Error, Result};
 use crate::process::Process;
 use crate::{cli, utils};
 
-pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::CommandLineArgs) -> Result<Process> {
+pub fn choose_victim(
+    proc_buf: &mut [u8],
+    buf: &mut [u8],
+    args: &cli::CommandLineArgs,
+) -> Result<Process> {
     let now = Instant::now();
 
     // `args` is currently only used when checking for unkillable patterns
@@ -24,15 +28,15 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::Co
             entry
                 .path()
                 .file_name()
-                .unwrap_or_else(|| &OsStr::new("0"))
+                .unwrap_or_else(|| OsStr::new("0"))
                 .to_str()
-                .unwrap_or_else(|| "0")
+                .unwrap_or("0")
                 .trim()
                 .parse::<u32>()
                 .ok()
         })
         .filter(|pid| *pid > 1)
-        .filter_map(|pid| Process::from_pid(pid, &mut proc_buf).ok());
+        .filter_map(|pid| Process::from_pid(pid, proc_buf).ok());
 
     let first_process = processes.next();
     if first_process.is_none() {
@@ -42,7 +46,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::Co
 
     let mut victim = first_process.unwrap();
     // TODO: find another victim if victim.vm_rss_kib() fails here
-    let mut victim_vm_rss_kib = victim.vm_rss_kib(&mut buf)?;
+    let mut victim_vm_rss_kib = victim.vm_rss_kib(buf)?;
 
     for process in processes {
         if victim.oom_score > process.oom_score {
@@ -58,9 +62,8 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::Co
                 }
             }
         }
-        
 
-        let cur_vm_rss_kib = process.vm_rss_kib(&mut buf)?;
+        let cur_vm_rss_kib = process.vm_rss_kib(buf)?;
         if cur_vm_rss_kib == 0 {
             // Current process is a kernel thread
             continue;
@@ -70,7 +73,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::Co
             continue;
         }
 
-        let cur_oom_score_adj = match process.oom_score_adj(&mut buf) {
+        let cur_oom_score_adj = match process.oom_score_adj(buf) {
             Ok(oom_score_adj) => oom_score_adj,
             // TODO: warn that this error happened
             Err(_) => continue,
@@ -90,7 +93,7 @@ pub fn choose_victim(mut proc_buf: &mut [u8], mut buf: &mut [u8], args: &cli::Co
     println!(
         "[LOG] Victim => pid: {}, comm: {}, oom_score: {}",
         victim.pid,
-        victim.comm(&mut buf).unwrap_or_else(|_| "unknown").trim(),
+        victim.comm(buf).unwrap_or("unknown").trim(),
         victim.oom_score
     );
 
@@ -101,7 +104,7 @@ pub fn kill_process(pid: i32, signal: i32) -> Result<()> {
     let res = unsafe { kill(pid, signal) };
 
     if res == -1 {
-        Err(match errno() {
+        return Err(match errno() {
             // An invalid signal was specified
             EINVAL => Error::InvalidSignal,
             // Calling process doesn't have permission to send signals to any
@@ -109,8 +112,8 @@ pub fn kill_process(pid: i32, signal: i32) -> Result<()> {
             EPERM => Error::NoPermission,
             // The target process or process group does not exist.
             ESRCH => Error::ProcessNotFound("kill"),
-            _ => Error::UnknownKillError,
-        })?
+            _ => Error::UnknownKill,
+        });
     }
 
     Ok(())

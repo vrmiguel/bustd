@@ -22,32 +22,31 @@ pub enum Error {
     NoPermission,
 
     // mlockall-specific errors
-    ///
-    CouldNotLockMemoryError,
-    TooMuchMemoryToLockError,
-    InvalidFlagsError,
+    CouldNotLockMemory,
+    TooMuchMemoryToLock,
+    InvalidFlags,
     // Should not happen but better safe than sorry
-    UnknownMlockallError,
-    UnknownKillError,
-    UnknownGetpguidError,
-    ThreadError {
+    UnknownMlockall,
+    UnknownKill,
+    UnknownGetpguid,
+    Thread {
         error: Box<dyn Any + Send + 'static>,
     },
 
     #[cfg(feature = "glob-ignore")]
     GlobPattern {
-        error: glob::PatternError
+        error: glob::PatternError,
     },
 
     // Errors that are likely impossible to happen
-    InvalidLinuxVersionError,
-    MalformedStatmError,
-    MalformedPressureFileError,
-    StringFromBytesError,
-    ParseIntError,
-    ParseFloatError,
-    SysconfFailedError,
-    SysInfoFailedError,
+    InvalidLinuxVersion,
+    MalformedStatm,
+    MalformedPressureFile,
+    StringFromBytes,
+    ParseInt,
+    ParseFloat,
+    SysConfFailed,
+    SysInfoFailed,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -62,13 +61,13 @@ impl From<std::io::Error> for Error {
 
 impl From<std::num::ParseIntError> for Error {
     fn from(_: std::num::ParseIntError) -> Self {
-        Self::ParseIntError
+        Self::ParseInt
     }
 }
 
 impl From<std::num::ParseFloatError> for Error {
     fn from(_: std::num::ParseFloatError) -> Self {
-        Self::ParseFloatError
+        Self::ParseFloat
     }
 }
 
@@ -86,7 +85,7 @@ impl From<std::str::Utf8Error> for Error {
 
 impl From<Box<dyn Any + Send + 'static>> for Error {
     fn from(error: Box<dyn Any + Send + 'static>) -> Self {
-        Self::ThreadError { error }
+        Self::Thread { error }
     }
 }
 

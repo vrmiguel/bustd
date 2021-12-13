@@ -6,7 +6,7 @@ use crate::utils::str_from_u8;
 
 macro_rules! malformed {
     () => {
-        Error::MalformedPressureFileError
+        Error::MalformedPressureFile
     };
 }
 
@@ -16,13 +16,13 @@ macro_rules! malformed {
 /// The data we're reading looks like:
 /// ```some avg10=0.00 avg60=0.00 avg300=0.00 total=0```
 ///
-pub fn pressure_some_avg10(mut buf: &mut [u8]) -> Result<f32> {
+pub fn pressure_some_avg10(buf: &mut [u8]) -> Result<f32> {
     let mut file = File::open("/proc/pressure/memory")?;
     buf.fill(0);
 
     // `buf` won't be large enough to fit all of `/proc/pressure/memory`
     // but will be large enough to hold at least the first line, which has the datas we want
-    let _ = file.read(&mut buf)?;
+    let _ = file.read(buf)?;
     let contents = str_from_u8(buf)?;
     let line = contents.lines().next().ok_or(malformed!())?;
     let mut words = line.split_ascii_whitespace();
@@ -40,5 +40,5 @@ pub fn pressure_some_avg10(mut buf: &mut [u8]) -> Result<f32> {
         }
     }
 
-    Err(malformed!())?
+    Err(malformed!())
 }

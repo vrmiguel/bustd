@@ -20,12 +20,12 @@ fn effective_user_id() -> u32 {
 pub fn get_process_group(pid: i32) -> Result<i32> {
     let pgid = unsafe { getpgid(pid) };
     if pgid == -1 {
-        Err(match errno() {
+        return Err(match errno() {
             EPERM => Error::NoPermission,
             ESRCH => Error::ProcessGroupNotFound,
             EINVAL => Error::InvalidPidSupplied,
-            _ => Error::UnknownGetpguidError,
-        })?
+            _ => Error::UnknownGetpguid,
+        });
     }
 
     Ok(pgid)
@@ -38,7 +38,7 @@ pub fn running_as_sudo() -> bool {
 pub fn page_size() -> Result<i64> {
     let page_size = unsafe { sysconf(_SC_PAGESIZE) };
     if page_size == -1 {
-        return Err(Error::SysconfFailedError);
+        return Err(Error::SysConfFailed);
     }
 
     #[allow(clippy::useless_conversion)]
@@ -71,9 +71,7 @@ pub fn get_username() -> Option<String> {
 pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
 
-    let bytes = buf
-        .get(0..first_nul_idx)
-        .ok_or(Error::StringFromBytesError)?;
+    let bytes = buf.get(0..first_nul_idx).ok_or(Error::StringFromBytes)?;
 
     Ok(str::from_utf8(bytes)?)
 }
@@ -82,4 +80,9 @@ pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
     let path = str_from_u8(buf)?;
     let file = File::open(&path)?;
     Ok(file)
+}
+
+pub fn bytes_to_megabytes(bytes: impl Into<u64>, mem_unit: impl Into<u64>) -> u64 {
+    const B_TO_MB: u64 = 1000 * 1000;
+    bytes.into() / B_TO_MB * mem_unit.into()
 }
