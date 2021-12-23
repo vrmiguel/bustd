@@ -10,7 +10,7 @@ use crate::error::{Error, Result};
 use crate::process::Process;
 use crate::{cfg, utils};
 
-pub fn choose_victim(proc_buf: &mut [u8], buf: &mut [u8], args: &cfg::Config) -> Result<Process> {
+pub fn choose_victim(proc_buf: &mut [u8], buf: &mut [u8], args: &cfg::Cli) -> Result<Process> {
     let now = Instant::now();
 
     // `args` is currently only used when checking for unkillable patterns
