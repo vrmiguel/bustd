@@ -27,10 +27,13 @@ pub struct CommandLineArgs {
         long = "unkillables",
         from_str_fn(parse_unkillables)
     )]
-    pub ignored: Option<Vec<String>>,
+    pub ignored: Option<Vec<glob::Pattern>>,
 }
 
 #[cfg(feature = "glob-ignore")]
-fn parse_unkillables(arg: &str) -> Result<Vec<String>, String> {
-    Ok(arg.split('|').map(ToOwned::to_owned).collect())
+fn parse_unkillables(arg: &str) -> Result<Vec<glob::Pattern>, String> {
+    let unkillables: Result<Vec<_>, _> = arg.split('|').map(glob::Pattern::new).collect();
+    
+    unkillables.map_err(|err| err.to_string())
 }
+
