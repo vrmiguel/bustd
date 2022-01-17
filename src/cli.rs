@@ -20,7 +20,7 @@ pub struct CommandLineArgs {
     pub cutoff_psi: f32, // TODO: responsitivity multiplier?
 
     #[cfg(feature = "glob-ignore")]
-    /// all processes whose names match any of the supplied tilde-separated glob patterns will never be chosen to be killed
+    /// all processes whose names match any of the supplied vertical bar-separated glob patterns will never be chosen to be killed
     #[argh(
         option,
         short = 'u',
@@ -32,5 +32,5 @@ pub struct CommandLineArgs {
 
 #[cfg(feature = "glob-ignore")]
 fn parse_unkillables(arg: &str) -> Result<Vec<String>, String> {
-    Ok(arg.split('~').map(ToOwned::to_owned).collect())
+    Ok(arg.split('|').map(ToOwned::to_owned).collect())
 }
