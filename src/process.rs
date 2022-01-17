@@ -98,7 +98,7 @@ impl Process {
     pub fn is_unkillable(&self, buf: &mut [u8], patterns: &[String]) -> Result<bool> {
         use glob::Pattern;
 
-        let comm = self.comm(buf)?;
+        let comm = self.comm(buf)?.trim();
         for pattern in patterns {
             let pattern = Pattern::new(pattern)?;
             if pattern.matches(comm) {
