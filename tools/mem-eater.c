@@ -14,14 +14,32 @@ struct free_mem_s {
 
 typedef struct free_mem_s free_mem_t;
 
-void free_mem_print(free_mem_t * mem) {
-    printf("\rFree system memory: %d MiB. Free swap: %d MiB", mem->available_mem_mib, mem->available_swap_mib);
+void display(free_mem_t * mem, float psi) {
+    printf("\rFree RAM: %d MiB. Free swap: %d MiB. PSI: %0.2f", mem->available_mem_mib, mem->available_swap_mib, psi);
     fflush(stdout);
 }
 
+float memory_pressure_some_avg_10(void) {
+    FILE * memory_pressure = fopen("/proc/pressure/memory", "r");
+    if(!memory_pressure) {
+        perror("/proc/pressure/memory. Exiting.\n");
+        fclose(memory_pressure);
+        _exit(1);
+    }
 
-free_mem_t poll_free_mem(void)
-{
+    float psi;
+
+    if (EOF == fscanf(memory_pressure, "some avg10=%f", &psi)) {
+        perror("Failed to read memory pressure values. Exiting.\n");
+        fclose(memory_pressure);
+        _exit(1);
+    }
+
+    fclose(memory_pressure);
+    return psi;
+}
+
+free_mem_t poll_free_mem(void) {
     FILE * meminfo = fopen("/proc/meminfo", "r");
     if(!meminfo) {
         fprintf(stderr, "/proc/meminfo not found. Exiting.\n");
@@ -66,26 +84,24 @@ free_mem_t poll_free_mem(void)
 
 int main(void) {
     time_t start, now;
-    float time_left = 10.0;
+    float time_left = 4.0;
 
     time(&start);
 
     while(time_left > 0.0) {
     	time(&now);
-    	time_left = 10.0 - difftime(now, start);
+        time_left = 4.0 - difftime(now, start);
 
     	printf("\rmem-eater will start consuming system memory in: %.2f secs. Press Ctrl+C if you don't want that to happen.", time_left);
     	fflush(stdout);
     	usleep(20);
     }
 
-    free_mem_t free_mem = poll_free_mem();
-    free_mem_print(&free_mem);
-
     while(1)
     {
         free_mem_t free_mem = poll_free_mem();
-        free_mem_print(&free_mem);
+        float psi = memory_pressure_some_avg_10();
+        display(&free_mem, psi);
         void *m = malloc(1024*1024);
         memset(m,0,1024*1024);
     }
