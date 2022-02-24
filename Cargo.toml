@@ -1,10 +1,12 @@
 [package]
 name = "bustd"
-authors = ["Vinícius Rodrigues Miguel <vrmiguel99@gmail.com>"]
+authors = ["Vinícius R. Miguel <vrmiguel99@gmail.com>"]
 version = "0.1.1"
 edition = "2018"
 readme = "README.md"
 repository = "https://github.com/vrmiguel/bustd"
+description = "Lightweight process killer daemon for out-of-memory scenarios"
+categories = ["command-line-utilities", "memory-management"]
 license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
