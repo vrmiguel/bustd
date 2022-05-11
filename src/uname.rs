@@ -53,22 +53,7 @@ impl Uname {
         let release = unsafe { CStr::from_ptr(self.uts_struct.release.as_ptr()) };
         let release = str_from_u8(release.to_bytes())?;
 
-        // The position of the first dot in the 'release' string
-        let dot_idx = release.find('.').ok_or(Error::InvalidLinuxVersion)?;
-
-        let (major, minor): (&str, &str) = release.split_at(dot_idx);
-
-        let major: u8 = major.parse().or(Err(Error::InvalidLinuxVersion))?;
-
-        // Eat the leading dot in front of minor
-        let minor = &minor[1..];
-        let dot_idx = minor.find('.').ok_or(Error::InvalidLinuxVersion)?;
-
-        let minor: u8 = (&minor[0..dot_idx])
-            .parse()
-            .or(Err(Error::InvalidLinuxVersion))?;
-
-        Ok(LinuxVersion { major, minor })
+        LinuxVersion::from_str(release).ok_or(Error::InvalidLinuxVersion)
     }
 }
 

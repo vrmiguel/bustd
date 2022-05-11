@@ -1,8 +1,9 @@
 // use uname::Uname;
 
+use linux_version::LinuxVersion;
 use uname::Uname;
 
-use crate::{memory::lock_memory_pages, monitor::Monitor};
+use crate::{error::Error, memory::lock_memory_pages, monitor::Monitor};
 
 mod cli;
 mod daemon;
@@ -16,15 +17,34 @@ mod process;
 mod uname;
 mod utils;
 
+// The first Linux version in which PSI information became available
+const LINUX_4_20: LinuxVersion = LinuxVersion {
+    major: 4,
+    minor: 20,
+};
+
 fn main() -> error::Result<()> {
     let args: cli::CommandLineArgs = argh::from_env();
 
     // Show uname info and return the Linux version running
     let _linux_version = {
+        let ensure_msg = "Ensure you're running at least Linux 4.20";
         let uname = Uname::new()?;
-        let _ = uname.print_info();
-        // TODO: check if Linux version is updated enough
-        uname.parse_version().ok()
+        uname.print_info()?;
+
+        match uname.parse_version() {
+            Ok(version) => {
+                if version < LINUX_4_20 {
+                    eprintln!(
+                        "{version} does not meet minimum requirements for bustd!\n{ensure_msg}"
+                    );
+                    return Err(Error::InvalidLinuxVersion);
+                }
+            }
+            Err(_) => {
+                eprintln!("Failed to parse Linux version!\n{ensure_msg}");
+            }
+        }
     };
 
     // In order to correctly use `mlockall`, we'll try our best to avoid heap allocations and

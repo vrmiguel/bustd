@@ -36,7 +36,7 @@ pub fn running_as_sudo() -> bool {
     effective_user_id() == 0
 }
 
-// Get the size of page in bytes.
+/// Get the size of the system's memory page in bytes.
 pub fn page_size() -> Result<i64> {
     // _SC_PAGESIZE is defined in POSIX.1
     // Safety: no memory unsafety can arise from `sysconf`
@@ -51,6 +51,7 @@ pub fn page_size() -> Result<i64> {
     Ok(page_size.into())
 }
 
+/// Attempt to get the user's username from the system's password bank
 pub fn get_username() -> Option<String> {
     let mut buf = [0; 2048];
     let mut result = ptr::null_mut();
