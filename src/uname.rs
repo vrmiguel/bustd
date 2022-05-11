@@ -54,29 +54,19 @@ impl Uname {
         let release = str_from_u8(release.to_bytes())?;
 
         // The position of the first dot in the 'release' string
-        let dot_idx = match release.find('.') {
-            Some(idx) => idx,
-            None => return Err(Error::InvalidLinuxVersion),
-        };
+        let dot_idx = release.find('.').ok_or(Error::InvalidLinuxVersion)?;
 
-        let (major, minor) = release.split_at(dot_idx);
+        let (major, minor): (&str, &str) = release.split_at(dot_idx);
 
-        let major = match major.parse::<u8>() {
-            Ok(major) => major,
-            Err(_) => return Err(Error::InvalidLinuxVersion),
-        };
+        let major: u8 = major.parse().or(Err(Error::InvalidLinuxVersion))?;
 
         // Eat the leading dot in front of minor
         let minor = &minor[1..];
-        let dot_idx = match minor.find('.') {
-            Some(idx) => idx,
-            None => return Err(Error::InvalidLinuxVersion),
-        };
+        let dot_idx = minor.find('.').ok_or(Error::InvalidLinuxVersion)?;
 
-        let minor = match (&minor[0..dot_idx]).parse::<u8>() {
-            Ok(minor) => minor,
-            Err(_) => return Err(Error::InvalidLinuxVersion),
-        };
+        let minor: u8 = (&minor[0..dot_idx])
+            .parse()
+            .or(Err(Error::InvalidLinuxVersion))?;
 
         Ok(LinuxVersion { major, minor })
     }
