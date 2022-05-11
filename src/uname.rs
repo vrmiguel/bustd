@@ -12,9 +12,13 @@ pub struct Uname {
 
 impl Uname {
     pub fn new() -> Result<Self> {
+        // Safety: libc::utsname is a bunch of char arrays and therefore
+        //         can be safely zeroed.
         let mut uts_struct: utsname = unsafe { mem::zeroed() };
 
+        // No memory unsafety can arise from this call of `uname`
         let ret_val = unsafe { uname(&mut uts_struct) };
+
         // uname returns a negative number upon failure
         if ret_val < 0 {
             return Err(Error::UnameFailed);

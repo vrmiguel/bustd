@@ -31,11 +31,15 @@ pub fn get_process_group(pid: i32) -> Result<i32> {
     Ok(pgid)
 }
 
+/// Checks if the program is running with sudo permissions.
 pub fn running_as_sudo() -> bool {
     effective_user_id() == 0
 }
 
+// Get the size of page in bytes.
 pub fn page_size() -> Result<i64> {
+    // _SC_PAGESIZE is defined in POSIX.1
+    // Safety: no memory unsafety can arise from `sysconf`
     let page_size = unsafe { sysconf(_SC_PAGESIZE) };
     if page_size == -1 {
         return Err(Error::SysConfFailed);
@@ -68,6 +72,7 @@ pub fn get_username() -> Option<String> {
     None
 }
 
+/// Construct a string slice ranging from the first position to the position of the first nul byte
 pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
 
@@ -76,6 +81,7 @@ pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
     Ok(str::from_utf8(bytes)?)
 }
 
+/// Given a slice of bytes, try to interpret it as a file path and open the corresponding file.
 pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
     let path = str_from_u8(buf)?;
     let file = File::open(&path)?;
@@ -85,4 +91,15 @@ pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
 pub fn bytes_to_megabytes(bytes: impl Into<u64>, mem_unit: impl Into<u64>) -> u64 {
     const B_TO_MB: u64 = 1000 * 1000;
     bytes.into() / B_TO_MB * mem_unit.into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::str_from_u8;
+
+    #[test]
+    fn should_construct_string_slice_from_bytes() {
+        assert_eq!(str_from_u8(b"ABC\0").unwrap(), "ABC");
+        assert_eq!(str_from_u8(b"ABC\0abc").unwrap(), "ABC");
+    }
 }
