@@ -1,5 +1,7 @@
 // use uname::Uname;
 
+use std::ops::Not;
+
 use linux_version::LinuxVersion;
 use uname::Uname;
 
@@ -17,7 +19,7 @@ mod process;
 mod uname;
 mod utils;
 
-// The first Linux version in which PSI information became available
+/// The first Linux version in which PSI information became available
 const LINUX_4_20: LinuxVersion = LinuxVersion {
     major: 4,
     minor: 20,
@@ -25,6 +27,7 @@ const LINUX_4_20: LinuxVersion = LinuxVersion {
 
 fn main() -> error::Result<()> {
     let args: cli::CommandLineArgs = argh::from_env();
+    let should_daemonize = args.no_daemon.not();
 
     // Show uname info and return the Linux version running
     let _linux_version = {
@@ -45,6 +48,15 @@ fn main() -> error::Result<()> {
                 eprintln!("Failed to parse Linux version!\n{ensure_msg}");
             }
         }
+
+        if let Ok(version) = uname.parse_version() {
+            if version < LINUX_4_20 {
+                eprintln!("{version} does not meet minimum requirements for bustd!\n{ensure_msg}");
+                return Err(Error::InvalidLinuxVersion);
+            }
+        } else {
+            eprintln!("Failed to parse Linux version!\n{ensure_msg}");
+        }
     };
 
     // In order to correctly use `mlockall`, we'll try our best to avoid heap allocations and
@@ -55,7 +67,7 @@ fn main() -> error::Result<()> {
     // Buffer for anything else
     let buf = [0_u8; 100];
 
-    if !args.no_daemon {
+    if should_daemonize {
         // Daemonize current process
         println!("\nStarting daemonization process!");
         daemon::daemonize()?;
