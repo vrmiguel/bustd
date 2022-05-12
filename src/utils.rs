@@ -8,17 +8,26 @@ use libc::{getpwuid_r, passwd};
 use crate::errno::errno;
 use crate::error::{Error, Result};
 
+/// This macro is used whenever we call a C function but
+/// strongly believe that it cannot cause any memory unsafety.
+#[macro_export]
+macro_rules! safe_ffi {
+    ($e: expr) => {
+        unsafe { $e }
+    };
+}
+
 /// Gets the effective user ID of the calling process
 fn effective_user_id() -> u32 {
     // Safety: the POSIX Programmer's Manual states that
     // geteuid will always be successful.
-    unsafe { libc::geteuid() }
+    safe_ffi! { libc::geteuid() }
 }
 
 /// Gets the process group of the process
 /// with the given PID.
 pub fn get_process_group(pid: i32) -> Result<i32> {
-    let pgid = unsafe { getpgid(pid) };
+    let pgid = safe_ffi! { getpgid(pid) };
     if pgid == -1 {
         return Err(match errno() {
             EPERM => Error::NoPermission,

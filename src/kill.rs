@@ -8,7 +8,7 @@ use libc::{EINVAL, EPERM, ESRCH, SIGKILL, SIGTERM};
 use crate::errno::errno;
 use crate::error::{Error, Result};
 use crate::process::Process;
-use crate::{cli, utils};
+use crate::{cli, safe_ffi, utils};
 
 pub fn choose_victim(
     proc_buf: &mut [u8],
@@ -101,7 +101,7 @@ pub fn choose_victim(
 }
 
 pub fn kill_process(pid: i32, signal: i32) -> Result<()> {
-    let res = unsafe { kill(pid, signal) };
+    let res = safe_ffi! { kill(pid, signal) };
 
     if res == -1 {
         return Err(match errno() {

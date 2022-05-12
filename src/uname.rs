@@ -3,6 +3,7 @@ use std::mem;
 
 use crate::error::{Error, Result};
 use crate::linux_version::LinuxVersion;
+use crate::safe_ffi;
 use crate::utils::str_from_u8;
 use libc::{uname, utsname};
 
@@ -16,8 +17,7 @@ impl Uname {
         //         can be safely zeroed.
         let mut uts_struct: utsname = unsafe { mem::zeroed() };
 
-        // No memory unsafety can arise from this call of `uname`
-        let ret_val = unsafe { uname(&mut uts_struct) };
+        let ret_val = safe_ffi! { uname(&mut uts_struct) };
 
         // uname returns a negative number upon failure
         if ret_val < 0 {
@@ -30,7 +30,6 @@ impl Uname {
     pub fn print_info(&self) -> Result<()> {
         // Safety: dereference of these raw pointers are safe since we know they're not NULL, since
         // the buffers in struct utsname are all correctly allocated in the stack at this moment
-
         let sysname = unsafe { CStr::from_ptr(self.uts_struct.sysname.as_ptr()) };
         let hostname = unsafe { CStr::from_ptr(self.uts_struct.nodename.as_ptr()) };
         let release = unsafe { CStr::from_ptr(self.uts_struct.release.as_ptr()) };

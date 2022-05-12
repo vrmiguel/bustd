@@ -4,14 +4,14 @@ use libc::{MCL_CURRENT, MCL_FUTURE};
 
 use crate::errno::errno;
 use crate::error::{Error, Result};
+use crate::safe_ffi;
 
 extern "C" {
     pub static _MCL_ONFAULT: libc::c_int;
 }
 
 pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
-    // Safety: mlockall is safe
-    let err = unsafe { mlockall(flags) };
+    let err = safe_ffi! { mlockall(flags) };
     if err == 0 {
         return Ok(());
     }
@@ -38,7 +38,7 @@ pub fn lock_memory_pages() -> Result<()> {
     // TODO: check for _MCL_ONFAULT == -1
 
     #[allow(non_snake_case)]
-    let MCL_ONFAULT: c_int = unsafe { _MCL_ONFAULT };
+    let MCL_ONFAULT: c_int = safe_ffi! { _MCL_ONFAULT };
     match _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT) {
         Err(err) => {
             eprintln!("First try at mlockall failed: {:?}", err);
