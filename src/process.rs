@@ -65,7 +65,7 @@ impl Process {
             str_from_u8(buf)?.trim()
         };
 
-        Ok(contents.parse::<i16>()?)
+        Ok(contents.parse()?)
     }
 
     /// Reads VmRSS from /proc/<PID>/statm
@@ -81,10 +81,7 @@ impl Process {
 
             str_from_u8(buf)?.split_ascii_whitespace()
         };
-        let vm_rss = columns
-            .nth(1)
-            .ok_or(Error::MalformedStatm)?
-            .parse::<i64>()?;
+        let vm_rss: i64 = columns.nth(1).ok_or(Error::MalformedStatm)?.parse()?;
 
         let page_size = utils::page_size()?;
 
@@ -120,7 +117,7 @@ impl Process {
             str_from_u8(buf)?.trim()
         };
 
-        Ok(contents.parse::<i16>()?)
+        Ok(contents.parse()?)
     }
 }
 
