@@ -25,7 +25,7 @@ libc = "0.2.97"
 # Using a somewhat popular crate, `procfs`, to test our own
 # implementation of proc-fs reads.
 # Probably not the best decision possible but OK for now
-procfs = "0.9.1"
+procfs = { version = "0.14.2", default-features = false }
 
 [features]
 glob-ignore = ["glob"]
