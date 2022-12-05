@@ -146,7 +146,8 @@ mod tests {
         // We'll now represent the current process using
         // the external `procfs` crate as well
         let _this = procfs::process::Process::myself().unwrap();
-        let _comm = _this.stat.comm;
+        let _stat = _this.stat().unwrap();
+        let _comm = _stat.comm;
 
         assert_eq!(comm.trim(), _comm)
     }
