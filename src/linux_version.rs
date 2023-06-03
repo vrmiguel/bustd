@@ -21,7 +21,7 @@ impl LinuxVersion {
         let minor = &minor[1..];
         let dot_idx = minor.find('.')?;
 
-        let minor: u8 = (&minor[0..dot_idx]).parse().ok()?;
+        let minor: u8 = minor[0..dot_idx].parse().ok()?;
 
         Some(Self { major, minor })
     }

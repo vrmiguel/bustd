@@ -94,7 +94,7 @@ pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
 /// Given a slice of bytes, try to interpret it as a file path and open the corresponding file.
 pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
     let path = str_from_u8(buf)?;
-    let file = File::open(&path)?;
+    let file = File::open(path)?;
     Ok(file)
 }
 

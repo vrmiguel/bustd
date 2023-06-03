@@ -13,6 +13,7 @@ cfg_if! {
     }
 }
 
+#[allow(clippy::unnecessary_cast)]
 pub fn errno() -> i32 {
     unsafe { (*_errno()) as i32 }
 }

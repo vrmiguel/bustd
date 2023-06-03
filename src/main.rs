@@ -30,7 +30,7 @@ fn main() -> error::Result<()> {
     let should_daemonize = args.no_daemon.not();
 
     // Show uname info and return the Linux version running
-    let _linux_version = {
+    {
         let ensure_msg = "Ensure you're running at least Linux 4.20";
         let uname = Uname::new()?;
         uname.print_info()?;

@@ -57,15 +57,6 @@ More specifically, `bustd` checks for how long, in microseconds, processes have 
 
 Available on the Arch User Repository
 
-```
-aur/bustd-git r81.caab293-3 (+1 0.93) 
-    Process killer daemon for out-of-memory scenarios
-aur/bustd-pacman-hooks 0.1.0-1 (+2 1.13) 
-    Series of Pacman Hooks to Ensure 'bustd' is Always Running an Up-to-Date Binary
-aur/bustd 0.1.0-1 (+2 1.13) (Desatualizado: 2022-02-25) 
-    Process Killer Daemon for Out-of-Memory Scenarios, written in Rust
-``` 
-
 ### Gentoo
 
 Available on the [GURU project](https://gitweb.gentoo.org/repo/proj/guru.git)

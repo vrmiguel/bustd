@@ -22,7 +22,6 @@ pub fn choose_victim(
     let _ = args;
 
     let mut processes = fs::read_dir("/proc/")?
-        .into_iter()
         .filter_map(|e| e.ok())
         .filter_map(|entry| {
             entry

@@ -1,7 +1,5 @@
 use std::{any::Any, str::Utf8Error};
 
-use daemonize::DaemonizeError;
-
 #[derive(Debug)]
 pub enum Error {
     // Only possible uname error: "buf is invalid"
@@ -14,7 +12,7 @@ pub enum Error {
         reason: String,
     },
     Daemonize {
-        error: DaemonizeError,
+        error: daemonize::Error,
     },
     Unicode {
         error: Utf8Error,
@@ -71,8 +69,8 @@ impl From<std::num::ParseFloatError> for Error {
     }
 }
 
-impl From<DaemonizeError> for Error {
-    fn from(error: DaemonizeError) -> Self {
+impl From<daemonize::Error> for Error {
+    fn from(error: daemonize::Error) -> Self {
         Self::Daemonize { error }
     }
 }
