@@ -50,7 +50,7 @@ impl Uname {
 
     pub fn parse_version(&self) -> Result<LinuxVersion> {
         let release = unsafe { CStr::from_ptr(self.uts_struct.release.as_ptr()) };
-        let release = str_from_u8(release.to_bytes())?;
+        let release = release.to_str()?;
 
         LinuxVersion::from_str(release).ok_or(Error::InvalidLinuxVersion)
     }
