@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::Read;
 
 use crate::error::{Error, Result};
-use crate::utils::str_from_u8;
+use crate::utils::str_from_bytes;
 
 macro_rules! malformed {
     () => {
@@ -22,8 +22,9 @@ pub fn pressure_some_avg10(buf: &mut [u8]) -> Result<f32> {
 
     // `buf` won't be large enough to fit all of `/proc/pressure/memory`
     // but will be large enough to hold at least the first line, which has the data we want
-    let _ = file.read(buf)?;
-    let contents = str_from_u8(buf)?;
+    file.read(buf)?;
+    let contents = str_from_bytes(buf)?;
+
     let line = contents.lines().next().ok_or(malformed!())?;
     let mut words = line.split_ascii_whitespace();
     if let Some(indicator) = words.next() {

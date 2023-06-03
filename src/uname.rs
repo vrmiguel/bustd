@@ -4,7 +4,6 @@ use std::mem;
 use crate::checked_ffi;
 use crate::error::{Error, Result};
 use crate::linux_version::LinuxVersion;
-use crate::utils::str_from_u8;
 use libc::{uname, utsname};
 
 pub struct Uname {
@@ -35,10 +34,10 @@ impl Uname {
         let release = unsafe { CStr::from_ptr(self.uts_struct.release.as_ptr()) };
         let arch = unsafe { CStr::from_ptr(self.uts_struct.machine.as_ptr()) };
 
-        let sysname = str_from_u8(sysname.to_bytes())?;
-        let hostname = str_from_u8(hostname.to_bytes())?;
-        let release = str_from_u8(release.to_bytes())?;
-        let arch = str_from_u8(arch.to_bytes())?;
+        let sysname = sysname.to_str()?;
+        let hostname = hostname.to_str()?;
+        let release = release.to_str()?;
+        let arch = arch.to_str()?;
 
         println!("OS:           {}", sysname);
         println!("Hostname:     {}", hostname);

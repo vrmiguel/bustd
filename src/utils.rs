@@ -1,4 +1,7 @@
+use std::ffi::OsStr;
 use std::fs::File;
+use std::os::unix::prelude::OsStrExt;
+use std::path::Path;
 use std::{ffi::CStr, mem, ptr, str};
 
 use libc::_SC_PAGESIZE;
@@ -83,18 +86,28 @@ pub fn get_username() -> Option<String> {
     None
 }
 
-/// Construct a string slice ranging from the first position to the position of the first nul byte
-pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
-    let first_nul_idx = memchr(b'0', buf).unwrap_or(buf.len());
+fn bytes_until_first_nil(buf: &[u8]) -> &[u8] {
+    let first_nul_idx = memchr(0, buf).unwrap_or(buf.len());
 
-    let bytes = buf.get(0..first_nul_idx).ok_or(Error::StringFromBytes)?;
+    &buf[0..first_nul_idx]
+}
+
+/// Construct a string slice ranging from the first position to the position of the first nul byte
+pub fn str_from_bytes(buf: &[u8]) -> Result<&str> {
+    let bytes = bytes_until_first_nil(buf);
 
     Ok(str::from_utf8(bytes)?)
 }
 
+fn path_from_bytes(buf: &[u8]) -> &Path {
+    let bytes = bytes_until_first_nil(buf);
+
+    Path::new(OsStr::from_bytes(bytes))
+}
+
 /// Given a slice of bytes, try to interpret it as a file path and open the corresponding file.
 pub fn file_from_buffer(buf: &[u8]) -> Result<File> {
-    let path = str_from_u8(buf)?;
+    let path = path_from_bytes(buf);
     let file = File::open(path)?;
     Ok(file)
 }
@@ -106,11 +119,11 @@ pub fn bytes_to_megabytes(bytes: impl Into<u64>, mem_unit: impl Into<u64>) -> u6
 
 #[cfg(test)]
 mod tests {
-    use super::str_from_u8;
+    use super::str_from_bytes;
 
     #[test]
     fn should_construct_string_slice_from_bytes() {
-        assert_eq!(str_from_u8(b"ABC\0").unwrap(), "ABC");
-        assert_eq!(str_from_u8(b"ABC\0abc").unwrap(), "ABC");
+        assert_eq!(str_from_bytes(b"ABC\0").unwrap(), "ABC");
+        assert_eq!(str_from_bytes(b"ABC\0abc").unwrap(), "ABC");
     }
 }

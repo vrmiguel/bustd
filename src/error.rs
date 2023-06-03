@@ -40,7 +40,6 @@ pub enum Error {
     InvalidLinuxVersion,
     MalformedStatm,
     MalformedPressureFile,
-    StringFromBytes,
     ParseInt,
     ParseFloat,
     SysConfFailed,

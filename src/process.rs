@@ -6,7 +6,7 @@ use libc::getpgid;
 use crate::checked_ffi;
 use crate::{
     error::{Error, Result},
-    utils::{self, str_from_u8},
+    utils::{self, str_from_bytes},
 };
 
 #[derive(Debug, Default)]
@@ -53,7 +53,7 @@ impl Process {
             let _ = file.read(buf)?;
         }
 
-        str_from_u8(buf)
+        str_from_bytes(buf)
     }
 
     pub fn oom_score_from_pid(pid: u32, buf: &mut [u8]) -> Result<i16> {
@@ -63,7 +63,7 @@ impl Process {
             buf.fill(0);
             let _ = file.read(buf)?;
 
-            str_from_u8(buf)?.trim()
+            str_from_bytes(buf)?.trim()
         };
 
         Ok(contents.parse()?)
@@ -80,7 +80,7 @@ impl Process {
             buf.fill(0);
             let _ = file.read(buf)?;
 
-            str_from_u8(buf)?.split_ascii_whitespace()
+            str_from_bytes(buf)?.split_ascii_whitespace()
         };
         let vm_rss: i64 = columns.nth(1).ok_or(Error::MalformedStatm)?.parse()?;
 
@@ -115,7 +115,7 @@ impl Process {
             buf.fill(0);
             let _ = file.read(buf)?;
 
-            str_from_u8(buf)?.trim()
+            str_from_bytes(buf)?.trim()
         };
 
         Ok(contents.parse()?)
