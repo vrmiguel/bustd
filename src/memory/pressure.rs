@@ -21,7 +21,7 @@ pub fn pressure_some_avg10(buf: &mut [u8]) -> Result<f32> {
     buf.fill(0);
 
     // `buf` won't be large enough to fit all of `/proc/pressure/memory`
-    // but will be large enough to hold at least the first line, which has the datas we want
+    // but will be large enough to hold at least the first line, which has the data we want
     let _ = file.read(buf)?;
     let contents = str_from_u8(buf)?;
     let line = contents.lines().next().ok_or(malformed!())?;

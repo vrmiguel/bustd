@@ -4,6 +4,7 @@ use std::{ffi::CStr, mem, ptr, str};
 use libc::_SC_PAGESIZE;
 use libc::{getpgid, sysconf, EINVAL, EPERM, ESRCH};
 use libc::{getpwuid_r, passwd};
+use memchr::memchr;
 
 use crate::errno::errno;
 use crate::error::{Error, Result};
@@ -11,7 +12,7 @@ use crate::error::{Error, Result};
 /// This macro is used whenever we call a C function but
 /// strongly believe that it cannot cause any memory unsafety.
 #[macro_export]
-macro_rules! safe_ffi {
+macro_rules! checked_ffi {
     ($e: expr) => {
         unsafe { $e }
     };
@@ -21,13 +22,13 @@ macro_rules! safe_ffi {
 fn effective_user_id() -> u32 {
     // Safety: the POSIX Programmer's Manual states that
     // geteuid will always be successful.
-    safe_ffi! { libc::geteuid() }
+    checked_ffi! { libc::geteuid() }
 }
 
 /// Gets the process group of the process
 /// with the given PID.
 pub fn get_process_group(pid: i32) -> Result<i32> {
-    let pgid = safe_ffi! { getpgid(pid) };
+    let pgid = checked_ffi! { getpgid(pid) };
     if pgid == -1 {
         return Err(match errno() {
             EPERM => Error::NoPermission,
@@ -49,7 +50,7 @@ pub fn running_as_sudo() -> bool {
 pub fn page_size() -> Result<i64> {
     // _SC_PAGESIZE is defined in POSIX.1
     // Safety: no memory unsafety can arise from `sysconf`
-    let page_size = unsafe { sysconf(_SC_PAGESIZE) };
+    let page_size = checked_ffi! { sysconf(_SC_PAGESIZE) };
     if page_size == -1 {
         return Err(Error::SysConfFailed);
     }
@@ -84,7 +85,7 @@ pub fn get_username() -> Option<String> {
 
 /// Construct a string slice ranging from the first position to the position of the first nul byte
 pub fn str_from_u8(buf: &[u8]) -> Result<&str> {
-    let first_nul_idx = buf.iter().position(|&c| c == b'\0').unwrap_or(buf.len());
+    let first_nul_idx = memchr(b'0', buf).unwrap_or(buf.len());
 
     let bytes = buf.get(0..first_nul_idx).ok_or(Error::StringFromBytes)?;
 

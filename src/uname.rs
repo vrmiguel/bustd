@@ -1,9 +1,9 @@
 use std::ffi::CStr;
 use std::mem;
 
+use crate::checked_ffi;
 use crate::error::{Error, Result};
 use crate::linux_version::LinuxVersion;
-use crate::safe_ffi;
 use crate::utils::str_from_u8;
 use libc::{uname, utsname};
 
@@ -17,7 +17,7 @@ impl Uname {
         //         can be safely zeroed.
         let mut uts_struct: utsname = unsafe { mem::zeroed() };
 
-        let ret_val = safe_ffi! { uname(&mut uts_struct) };
+        let ret_val = checked_ffi! { uname(&mut uts_struct) };
 
         // uname returns a negative number upon failure
         if ret_val < 0 {
@@ -55,12 +55,3 @@ impl Uname {
         LinuxVersion::from_str(release).ok_or(Error::InvalidLinuxVersion)
     }
 }
-
-// impl Display for UnameData {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         writeln!(f, "OS: {}", self.system_name)?;
-//         writeln!(f, "Hostname: {}", self.node_name)?;
-//         writeln!(f, "Version: {}", self.version)?;
-//         writeln!(f, "Architecture: {}", self.machine)
-//     }
-// }

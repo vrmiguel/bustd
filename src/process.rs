@@ -3,7 +3,7 @@ use std::io::Write;
 
 use libc::getpgid;
 
-use crate::safe_ffi;
+use crate::checked_ffi;
 use crate::{
     error::{Error, Result},
     utils::{self, str_from_u8},
@@ -26,7 +26,7 @@ impl Process {
     /// Returns the current process represented as a Process struct
     /// Unused in the actual code but very often used when debugging
     pub fn this(buf: &mut [u8]) -> Result<Self> {
-        let pid = safe_ffi! { libc::getpid() } as u32;
+        let pid = checked_ffi! { libc::getpid() } as u32;
 
         Self::from_pid(pid, buf)
     }
@@ -36,7 +36,7 @@ impl Process {
     /// TODO: would it be better to check for /proc/<PID>/ in here?
     pub fn is_alive_from_pid(pid: u32) -> bool {
         // Safety: `getpgid` is memory safe
-        let group_id = safe_ffi! { getpgid(pid as i32) };
+        let group_id = checked_ffi! { getpgid(pid as i32) };
 
         group_id > 0
     }

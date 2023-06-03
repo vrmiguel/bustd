@@ -3,8 +3,8 @@ use std::{fmt, mem};
 use libc::sysinfo;
 
 use crate::{
+    checked_ffi,
     error::{Error, Result},
-    safe_ffi,
     utils::bytes_to_megabytes,
 };
 
@@ -24,7 +24,7 @@ fn sys_info() -> Result<sysinfo> {
     let mut sys_info: sysinfo = unsafe { mem::zeroed() };
 
     // Safety: sysinfo() is safe and must not fail when passed a valid reference
-    let ret_val = safe_ffi! { libc::sysinfo(&mut sys_info) };
+    let ret_val = checked_ffi! { libc::sysinfo(&mut sys_info) };
 
     if ret_val != 0 {
         // The only error that sysinfo() can have happens when
