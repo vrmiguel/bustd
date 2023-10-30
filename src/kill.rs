@@ -23,17 +23,7 @@ pub fn choose_victim(
 
     let mut processes = fs::read_dir("/proc/")?
         .filter_map(|e| e.ok())
-        .filter_map(|entry| {
-            entry
-                .path()
-                .file_name()
-                .unwrap_or_else(|| OsStr::new("0"))
-                .to_str()
-                .unwrap_or("0")
-                .trim()
-                .parse::<u32>()
-                .ok()
-        })
+        .filter_map(|entry| entry.file_name().to_str()?.trim().parse::<u32>().ok())
         .filter(|pid| *pid > 1)
         .filter_map(|pid| Process::from_pid(pid, proc_buf).ok());
 
