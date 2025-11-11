@@ -1,6 +1,6 @@
 use std::fs;
 use std::time::Duration;
-use std::{ffi::OsStr, time::Instant};
+use std::time::Instant;
 
 use libc::kill;
 use libc::{EINVAL, EPERM, ESRCH, SIGKILL, SIGTERM};
@@ -8,7 +8,7 @@ use libc::{EINVAL, EPERM, ESRCH, SIGKILL, SIGTERM};
 use crate::errno::errno;
 use crate::error::{Error, Result};
 use crate::process::Process;
-use crate::{checked_ffi, cli, utils};
+use crate::{cli, utils};
 
 pub fn choose_victim(
     proc_buf: &mut [u8],
@@ -90,7 +90,7 @@ pub fn choose_victim(
 }
 
 pub fn kill_process(pid: i32, signal: i32) -> Result<()> {
-    let res = checked_ffi! { kill(pid, signal) };
+    let res = unsafe { kill(pid, signal) };
 
     if res == -1 {
         return Err(match errno() {

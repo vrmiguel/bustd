@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::{any::Any, str::Utf8Error};
 
 #[derive(Debug)]
@@ -14,6 +16,7 @@ pub enum Error {
     Daemonize {
         error: daemonize::Error,
     },
+    #[allow(unused)]
     Unicode {
         error: Utf8Error,
     },
@@ -27,9 +30,6 @@ pub enum Error {
     UnknownMlockall,
     UnknownKill,
     UnknownGetpguid,
-    Thread {
-        error: Box<dyn Any + Send + 'static>,
-    },
 
     #[cfg(feature = "glob-ignore")]
     GlobPattern {
@@ -77,12 +77,6 @@ impl From<daemonize::Error> for Error {
 impl From<std::str::Utf8Error> for Error {
     fn from(error: std::str::Utf8Error) -> Self {
         Self::Unicode { error }
-    }
-}
-
-impl From<Box<dyn Any + Send + 'static>> for Error {
-    fn from(error: Box<dyn Any + Send + 'static>) -> Self {
-        Self::Thread { error }
     }
 }
 

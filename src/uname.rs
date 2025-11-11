@@ -1,7 +1,6 @@
 use std::ffi::CStr;
 use std::mem;
 
-use crate::checked_ffi;
 use crate::error::{Error, Result};
 use crate::linux_version::LinuxVersion;
 use libc::{uname, utsname};
@@ -16,7 +15,7 @@ impl Uname {
         //         can be safely zeroed.
         let mut uts_struct: utsname = unsafe { mem::zeroed() };
 
-        let ret_val = checked_ffi! { uname(&mut uts_struct) };
+        let ret_val = unsafe { uname(&mut uts_struct) };
 
         // uname returns a negative number upon failure
         if ret_val < 0 {

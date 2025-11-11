@@ -2,7 +2,6 @@ use libc::{c_int, mlockall};
 use libc::{EAGAIN, EINVAL, ENOMEM, EPERM};
 use libc::{MCL_CURRENT, MCL_FUTURE};
 
-use crate::checked_ffi;
 use crate::errno::errno;
 use crate::error::{Error, Result};
 
@@ -11,7 +10,7 @@ extern "C" {
 }
 
 pub fn _mlockall_wrapper(flags: c_int) -> Result<()> {
-    let err = checked_ffi! { mlockall(flags) };
+    let err = unsafe { mlockall(flags) };
     if err == 0 {
         return Ok(());
     }
@@ -38,7 +37,7 @@ pub fn lock_memory_pages() -> Result<()> {
     // TODO: check for _MCL_ONFAULT == -1
 
     #[allow(non_snake_case)]
-    let MCL_ONFAULT: c_int = checked_ffi! { _MCL_ONFAULT };
+    let MCL_ONFAULT: c_int = unsafe { _MCL_ONFAULT };
     match _mlockall_wrapper(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT) {
         Err(err) => {
             eprintln!("First try at mlockall failed: {:?}", err);
