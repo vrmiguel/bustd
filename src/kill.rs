@@ -17,55 +17,63 @@ pub fn choose_victim(
 ) -> Result<Process> {
     let now = Instant::now();
 
-    // `args` is currently only used when checking for unkillable patterns
-    #[cfg(not(feature = "glob-ignore"))]
-    let _ = args;
-
-    let mut processes = fs::read_dir("/proc/")?
+    let processes = fs::read_dir("/proc/")?
         .filter_map(|e| e.ok())
         .filter_map(|entry| entry.file_name().to_str()?.trim().parse::<u32>().ok())
         .filter(|pid| *pid > 1)
         .filter_map(|pid| Process::from_pid(pid, proc_buf).ok());
 
-    let first_process = processes.next();
-    if first_process.is_none() {
-        // Likely an impossible scenario but we found no process to kill!
-        return Err(Error::ProcessNotFound("choose_victim"));
-    }
-
-    let mut victim = first_process.unwrap();
-    // TODO: find another victim if victim.vm_rss_kib() fails here
-    let mut victim_vm_rss_kib = victim.vm_rss_kib(buf)?;
+    let mut victim: Option<(Process, i64)> = None;
 
     for process in processes {
-        if victim.oom_score > process.oom_score {
-            // Our current victim is less innocent than the process being analysed
-            continue;
+        if let Some((current, _)) = &victim {
+            if current.oom_score > process.oom_score {
+                // Our current victim is less innocent than the process being analysed
+                continue;
+            }
         }
 
         #[cfg(feature = "glob-ignore")]
         {
             if let Some(patterns) = &args.ignored {
-                if matches!(process.is_unkillable(buf, patterns), Ok(true)) {
-                    continue;
+                match process.is_unkillable(buf, patterns) {
+                    Ok(true) => continue,
+                    Ok(false) => {}
+                    Err(err) => {
+                        if args.verbose {
+                            eprintln!(
+                                "Failed to determine whether PID {} is unkillable: {err:?}",
+                                process.pid
+                            );
+                        }
+                        continue;
+                    }
                 }
             }
         }
 
-        let cur_vm_rss_kib = process.vm_rss_kib(buf)?;
+        let cur_vm_rss_kib = match process.vm_rss_kib(buf) {
+            Ok(vm_rss_kib) => vm_rss_kib,
+            Err(err) => {
+                if args.verbose {
+                    eprintln!("Failed to fetch vm_rss_kib of {}: {err:?}", process.pid);
+                }
+                continue;
+            }
+        };
         if cur_vm_rss_kib == 0 {
             // Current process is a kernel thread
             continue;
         }
 
-        if process.oom_score == victim.oom_score && cur_vm_rss_kib <= victim_vm_rss_kib {
-            continue;
-        }
-
         let cur_oom_score_adj = match process.oom_score_adj(buf) {
             Ok(oom_score_adj) => oom_score_adj,
-            // TODO: warn that this error happened
-            Err(_) => continue,
+            Err(err) => {
+                if args.verbose {
+                    eprintln!("Failed to fetch oom_score_adj of {}: {err:?}", process.pid);
+                }
+                continue;
+            }
         };
 
         if cur_oom_score_adj == -1000 {
@@ -73,10 +81,21 @@ pub fn choose_victim(
             continue;
         }
 
-        // eprintln!("[DBG] New victim with PID={}!", process.pid);
-        victim = process;
-        victim_vm_rss_kib = cur_vm_rss_kib;
+        let should_replace = match &victim {
+            None => true,
+            Some((current, current_vm_rss_kib)) => {
+                process.oom_score > current.oom_score
+                    || (process.oom_score == current.oom_score
+                        && cur_vm_rss_kib > *current_vm_rss_kib)
+            }
+        };
+
+        if should_replace {
+            victim = Some((process, cur_vm_rss_kib));
+        }
     }
+
+    let (victim, _) = victim.ok_or(Error::ProcessNotFound("choose_victim"))?;
 
     println!("[LOG] Found victim in {} secs.", now.elapsed().as_secs());
     println!(
