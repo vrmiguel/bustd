@@ -1,4 +1,6 @@
-use std::fs;
+use std::ffi::OsStr;
+use std::fs::{self, DirEntry};
+use std::os::unix::ffi::OsStrExt;
 use std::time::Duration;
 use std::time::Instant;
 
@@ -19,7 +21,7 @@ pub fn choose_victim(
 
     let processes = fs::read_dir("/proc/")?
         .filter_map(|e| e.ok())
-        .filter_map(|entry| entry.file_name().to_str()?.trim().parse::<u32>().ok())
+        .filter_map(parse_pid_entry)
         .filter(|pid| *pid > 1)
         .filter_map(|pid| Process::from_pid(pid, proc_buf).ok());
 
@@ -167,4 +169,55 @@ pub fn kill_and_wait(process: Process) -> Result<bool> {
     }
 
     Ok(false)
+}
+
+fn parse_pid(name: &OsStr) -> Option<u32> {
+    let bytes = name.as_bytes();
+
+    if bytes.is_empty() {
+        return None;
+    }
+
+    bytes.iter().try_fold(0_u32, |pid, &byte| {
+        let digit = byte.checked_sub(b'0')?;
+        if digit > 9 {
+            return None;
+        }
+
+        pid.checked_mul(10)?.checked_add(u32::from(digit))
+    })
+}
+
+fn parse_pid_entry(entry: DirEntry) -> Option<u32> {
+    parse_pid(&entry.file_name())
+}
+
+#[cfg(test)]
+mod tests {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+
+    use super::parse_pid;
+
+    #[test]
+    fn parses_numeric_proc_entries() {
+        assert_eq!(parse_pid(OsStr::new("0")), Some(0));
+        assert_eq!(parse_pid(OsStr::new("12345")), Some(12345));
+        assert_eq!(parse_pid(OsStr::new("4294967295")), Some(u32::MAX));
+    }
+
+    #[test]
+    fn rejects_non_numeric_proc_entries() {
+        assert_eq!(parse_pid(OsStr::new("")), None);
+        assert_eq!(parse_pid(OsStr::new("self")), None);
+        assert_eq!(parse_pid(OsStr::new("12a")), None);
+        assert_eq!(parse_pid(OsStr::new("+12")), None);
+        assert_eq!(parse_pid(OsStr::new(" 12")), None);
+        assert_eq!(parse_pid(OsStr::from_bytes(b"\xff")), None);
+    }
+
+    #[test]
+    fn rejects_pid_overflow() {
+        assert_eq!(parse_pid(OsStr::new("4294967296")), None);
+    }
 }
