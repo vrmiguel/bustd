@@ -106,11 +106,7 @@ impl Monitor {
         // we were searching for our victim
         self.update_memory_stats()?;
         if self.memory_is_low() {
-            if self.args.kill_pgroup {
-                kill::kill_process_group(victim)?;
-            } else {
-                kill::kill_and_wait(victim)?;
-            }
+            kill::kill_and_wait(victim)?;
         }
         Ok(())
     }

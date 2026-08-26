@@ -7,8 +7,6 @@ pub enum Error {
     // Only possible uname error: "buf is invalid"
     UnameFailed,
     ProcessNotFound(&'static str),
-    InvalidPidSupplied,
-    ProcessGroupNotFound,
     InvalidSignal,
     Io {
         reason: String,
@@ -29,7 +27,6 @@ pub enum Error {
     // Should not happen but better safe than sorry
     UnknownMlockall,
     UnknownKill,
-    UnknownGetpguid,
 
     #[cfg(feature = "glob-ignore")]
     GlobPattern {
