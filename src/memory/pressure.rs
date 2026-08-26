@@ -10,12 +10,15 @@ macro_rules! malformed {
     };
 }
 
-/// Returns the avg10 value in the `some` row of `/proc/pressure/memory`, which
-/// indicates the absolute stall time (in us) in which at least some tasks were stalled.
+/// Returns the `some avg10` value from `/proc/pressure/memory`.
+/// This is the percentage of recent time during which at least one task was
+/// stalled by memory pressure. The `total` field, rather than `avg10`, holds
+/// the cumulative stall time in microseconds.
 ///
 /// The data we're reading looks like:
-/// ```some avg10=0.00 avg60=0.00 avg300=0.00 total=0```
-///
+/// ```text
+/// some avg10=0.00 avg60=0.00 avg300=0.00 total=0
+/// ```
 pub fn pressure_some_avg10(buf: &mut [u8]) -> Result<f32> {
     let mut file = File::open("/proc/pressure/memory")?;
     buf.fill(0);

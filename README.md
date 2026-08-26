@@ -32,7 +32,7 @@ This approach has its up- and downsides. The amount of free RAM that `sysinfo` r
 
 The `sysinfo` syscall is one order of magnitude faster, at least according to [this kernel patch](https://sourceware.org/legacy-ml/libc-alpha/2015-08/msg00512.html) (granted, from 2015).
 
-As `bustd` can't solely rely on the free RAM readings of `sysinfo`, we check for memory stress through [Pressure Stall Information](https://www.kernel.org/doc/html/v5.8/accounting/psi.html).
+As `bustd` can't solely rely on the free RAM readings of `sysinfo`, we check for memory stress through [Pressure Stall Information](https://docs.kernel.org/accounting/psi.html).
 
 ### `bustd` will try to lock all pages mapped into its address space
 
@@ -44,12 +44,12 @@ The Linux kernel, since version 4.20 (and built with `CONFIG_PSI=y`), presents c
 In the words of [Facebook Incubator](https://facebookmicrosites.github.io/psi/docs/overview):
 
 ```
-PSI stats are like barometers that provide fair warning of impending resource 
-shortages, enabling you to take more proactive, granular, and nuanced steps 
+PSI stats are like barometers that provide fair warning of impending resource
+shortages, enabling you to take more proactive, granular, and nuanced steps
 when resources start becoming scarce.
 ```
 
-More specifically, `bustd` checks for how long, in microseconds, processes have stalled in the last 10 seconds. By default, `bustd` will kill a process when processes have stalled for 25 microseconds in the last ten seconds.
+`bustd` watches the `some avg10` value reported by `/proc/pressure/memory`. This is the percentage of recent time during which at least one task was stalled by memory pressure. Once free RAM falls to 15% or less, `bustd` will, by default, kill a process when the ten-second pressure average reaches 25%, i.e. when tasks have recently been stalled about a quarter of the time (the exact percentage is configurable)
 
 ## Packaging
 
