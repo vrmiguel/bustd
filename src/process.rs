@@ -90,7 +90,6 @@ impl Process {
         Ok(vm_rss_kib)
     }
 
-    #[cfg(feature = "glob-ignore")]
     /// Checks if the process' name matches any of the given glob patterns
     pub fn is_unkillable(&self, buf: &mut [u8], patterns: &[glob::Pattern]) -> Result<bool> {
         let comm = self.comm(buf)?.trim();

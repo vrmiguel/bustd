@@ -15,7 +15,6 @@ pub struct CommandLineArgs {
     #[argh(option, short = 'p', long = "psi", default = "25.0")]
     pub cutoff_psi: f32, // TODO: responsitivity multiplier?
 
-    #[cfg(feature = "glob-ignore")]
     /// all processes whose names match any of the supplied vertical bar-separated glob patterns will never be chosen to be killed
     #[argh(
         option,
@@ -26,7 +25,6 @@ pub struct CommandLineArgs {
     pub ignored: Option<Vec<glob::Pattern>>,
 }
 
-#[cfg(feature = "glob-ignore")]
 fn parse_unkillables(arg: &str) -> Result<Vec<glob::Pattern>, String> {
     let unkillables: Result<Vec<_>, _> = arg.split('|').map(glob::Pattern::new).collect();
 

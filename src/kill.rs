@@ -35,21 +35,18 @@ pub fn choose_victim(
             }
         }
 
-        #[cfg(feature = "glob-ignore")]
-        {
-            if let Some(patterns) = &args.ignored {
-                match process.is_unkillable(buf, patterns) {
-                    Ok(true) => continue,
-                    Ok(false) => {}
-                    Err(err) => {
-                        if args.verbose {
-                            eprintln!(
-                                "Failed to determine whether PID {} is unkillable: {err:?}",
-                                process.pid
-                            );
-                        }
-                        continue;
+        if let Some(patterns) = &args.ignored {
+            match process.is_unkillable(buf, patterns) {
+                Ok(true) => continue,
+                Ok(false) => {}
+                Err(err) => {
+                    if args.verbose {
+                        eprintln!(
+                            "Failed to determine whether PID {} is unkillable: {err:?}",
+                            process.pid
+                        );
                     }
+                    continue;
                 }
             }
         }

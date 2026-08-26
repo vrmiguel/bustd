@@ -27,12 +27,9 @@ pub enum Error {
     // Should not happen but better safe than sorry
     UnknownMlockall,
     UnknownKill,
-
-    #[cfg(feature = "glob-ignore")]
     GlobPattern {
         error: glob::PatternError,
     },
-
     // Errors that are likely impossible to happen
     InvalidLinuxVersion,
     MalformedStatm,
@@ -77,7 +74,6 @@ impl From<std::str::Utf8Error> for Error {
     }
 }
 
-#[cfg(feature = "glob-ignore")]
 impl From<glob::PatternError> for Error {
     fn from(error: glob::PatternError) -> Self {
         Self::GlobPattern { error }

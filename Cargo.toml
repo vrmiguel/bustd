@@ -11,7 +11,7 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-glob = { version = "0.3.1", optional = true }
+glob = { version = "0.3.1" }
 libc      = "0.2.144"
 cfg-if    = "1.0.0"
 daemonize = "0.5.0"
@@ -27,9 +27,6 @@ libc = "0.2.97"
 # implementation of proc-fs reads.
 # Probably not the best decision possible but OK for now
 procfs = { version = "0.14.2", default-features = false }
-
-[features]
-glob-ignore = ["glob"]
 
 [profile.release]
 lto = true
