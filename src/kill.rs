@@ -7,10 +7,10 @@ use std::time::Instant;
 use libc::kill;
 use libc::{EINVAL, EPERM, ESRCH, SIGKILL, SIGTERM};
 
+use crate::cli;
 use crate::errno::errno;
 use crate::error::{Error, Result};
 use crate::process::Process;
-use crate::{cli, utils};
 
 pub fn choose_victim(
     proc_buf: &mut [u8],
@@ -125,17 +125,6 @@ pub fn kill_process(pid: i32, signal: i32) -> Result<()> {
             _ => Error::UnknownKill,
         });
     }
-
-    Ok(())
-}
-
-pub fn kill_process_group(process: Process) -> Result<()> {
-    let pid = process.pid;
-
-    let pgid = utils::get_process_group(pid as i32)?;
-
-    // TODO: kill and wait
-    let _ = kill_process(-pgid, SIGTERM);
 
     Ok(())
 }

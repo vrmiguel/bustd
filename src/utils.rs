@@ -4,12 +4,11 @@ use std::os::unix::prelude::OsStrExt;
 use std::path::Path;
 use std::{ffi::CStr, mem, ptr, str};
 
+use libc::sysconf;
 use libc::_SC_PAGESIZE;
-use libc::{getpgid, sysconf, EINVAL, EPERM, ESRCH};
 use libc::{getpwuid_r, passwd};
 use memchr::memchr;
 
-use crate::errno::errno;
 use crate::error::{Error, Result};
 
 /// Gets the effective user ID of the calling process
@@ -17,22 +16,6 @@ fn effective_user_id() -> u32 {
     // Safety: the POSIX Programmer's Manual states that
     // geteuid will always be successful.
     unsafe { libc::geteuid() }
-}
-
-/// Gets the process group of the process
-/// with the given PID.
-pub fn get_process_group(pid: i32) -> Result<i32> {
-    let pgid = unsafe { getpgid(pid) };
-    if pgid == -1 {
-        return Err(match errno() {
-            EPERM => Error::NoPermission,
-            ESRCH => Error::ProcessGroupNotFound,
-            EINVAL => Error::InvalidPidSupplied,
-            _ => Error::UnknownGetpguid,
-        });
-    }
-
-    Ok(pgid)
 }
 
 /// Checks if the program is running with sudo permissions.
